@@ -31,7 +31,6 @@ html,
 body {
   overflow: hidden;
   overscroll-behavior: none;
-  touch-action: manipulation;
 }
 
 body {
@@ -45,6 +44,12 @@ input {
 
 button {
   border: 0;
+}
+
+button,
+.landing-screen,
+.gyo-button {
+  touch-action: manipulation;
 }
 
 .input-screen,
@@ -92,7 +97,11 @@ button {
   font-size: clamp(4rem, 16vw, 7rem);
   line-height: 1;
   outline: none;
+  color: #111;
+  caret-color: #111;
   box-shadow: 0 18px 40px rgba(232, 181, 35, 0.14);
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .emoji-input::placeholder {
