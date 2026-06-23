@@ -25,7 +25,7 @@ export function EmojiInput({ value, onChange }: EmojiInputProps) {
       value={value}
       onChange={handleChange}
       onFocus={(event) => event.currentTarget.select()}
-      placeholder="😀"
+      placeholder=""
     />
   )
 }
