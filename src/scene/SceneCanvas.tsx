@@ -42,7 +42,7 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
     let finAngle = 0
     let bodyBend = 0
     let rotationZ = 0
-    let rotationY = 0
+    let facing = 1
 
     if (mode === 'landing') {
       if (landingState === 'falling') {
@@ -51,6 +51,7 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
         y = THREE.MathUtils.lerp(1.42, -0.64, 1 - Math.pow(1 - fallT, 2))
         rotationZ = THREE.MathUtils.lerp(-0.4, 0.15, fallT)
         tailAngle = Math.sin(elapsed * 16) * 0.08
+        facing = 1
 
         if (fallT >= 1 && !hasAnnouncedLanding.current) {
           hasAnnouncedLanding.current = true
@@ -63,20 +64,20 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
         y = -0.64 + Math.abs(flop) * 0.2
         z = Math.sin(elapsed * 3.2) * 0.06
         rotationZ = flop * 0.5
-        rotationY = flop * 0.28
         tailAngle = Math.sin(elapsed * 18) * 0.7
         finAngle = Math.sin(elapsed * 11.2) * 0.8
         bodyBend = flop * 0.34 + kick * 0.18
+        facing = flop < 0 ? -1 : 1
       } else {
         const diveT = Math.min((elapsed % 10) / 0.9, 1)
         x = THREE.MathUtils.lerp(0, 0.9, diveT)
         y = THREE.MathUtils.lerp(-0.52, -1.12, diveT * diveT)
         z = THREE.MathUtils.lerp(0, -0.24, diveT)
         rotationZ = THREE.MathUtils.lerp(-0.1, -0.95, diveT)
-        rotationY = THREE.MathUtils.lerp(0, -0.52, diveT)
         tailAngle = Math.sin(elapsed * 24) * (0.5 - diveT * 0.12)
         finAngle = Math.sin(elapsed * 15) * 0.5
         bodyBend = 0.18
+        facing = 1
 
         if (diveT > 0.4 && !diveRippleSent.current) {
           diveRippleSent.current = true
@@ -93,14 +94,15 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
       const heading = Math.atan2(swimState.velocity.y, swimState.velocity.x)
       const turn = THREE.MathUtils.clamp(swimState.target.y - swimState.position.y, -1, 1)
       rotationZ = heading * 0.46
-      rotationY = Math.atan2(swimState.velocity.z, swimState.velocity.x) * 0.42
       tailAngle = Math.sin(elapsed * (6 + speed * 14)) * (0.24 + speed * 0.52 + Math.abs(turn) * 0.2)
       finAngle = Math.sin(elapsed * (9 + speed * 20)) * 0.26
       bodyBend = turn * 0.34 + Math.sin(elapsed * 2.1) * 0.06
+      facing = swimState.velocity.x >= 0 ? 1 : -1
     }
 
     groupRef.current.position.set(x, y, z)
-    groupRef.current.rotation.set(0, rotationY, rotationZ)
+    groupRef.current.rotation.set(0, 0, rotationZ)
+    groupRef.current.scale.set(facing, 1, 1)
     motionRef.current.tailAngle = tailAngle
     motionRef.current.finAngle = finAngle
     motionRef.current.bodyBend = bodyBend
