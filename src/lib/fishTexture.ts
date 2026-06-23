@@ -1,28 +1,5 @@
 import * as THREE from 'three'
 
-type ExpressionPreset = {
-  eyeScale: number
-  eyeTilt: number
-  eyeSpread: number
-  mouthWidth: number
-  mouthOpen: number
-  mouthTilt: number
-  browLift: number
-}
-
-const presets: Record<string, ExpressionPreset> = {
-  '😀': { eyeScale: 1, eyeTilt: 0, eyeSpread: 1, mouthWidth: 1.1, mouthOpen: 1.1, mouthTilt: 0, browLift: 0 },
-  '🥹': { eyeScale: 1.08, eyeTilt: -0.08, eyeSpread: 0.96, mouthWidth: 0.62, mouthOpen: 0.5, mouthTilt: -0.08, browLift: 0.16 },
-  '🙃': { eyeScale: 1, eyeTilt: 0.28, eyeSpread: 1.03, mouthWidth: 0.88, mouthOpen: 0.48, mouthTilt: 0.2, browLift: -0.12 },
-  '😌': { eyeScale: 0.84, eyeTilt: -0.18, eyeSpread: 0.92, mouthWidth: 0.76, mouthOpen: 0.18, mouthTilt: -0.12, browLift: 0.08 },
-  '😳': { eyeScale: 1.16, eyeTilt: 0, eyeSpread: 1.05, mouthWidth: 0.42, mouthOpen: 0.6, mouthTilt: 0, browLift: 0.12 },
-  '😮': { eyeScale: 1.05, eyeTilt: 0, eyeSpread: 0.98, mouthWidth: 0.36, mouthOpen: 0.92, mouthTilt: 0, browLift: 0.06 },
-  '🥺': { eyeScale: 1.18, eyeTilt: -0.12, eyeSpread: 0.92, mouthWidth: 0.52, mouthOpen: 0.28, mouthTilt: -0.08, browLift: 0.2 },
-  '🫠': { eyeScale: 0.98, eyeTilt: 0.14, eyeSpread: 0.92, mouthWidth: 0.68, mouthOpen: 0.3, mouthTilt: 0.18, browLift: -0.22 },
-  '😶': { eyeScale: 0.96, eyeTilt: 0, eyeSpread: 0.98, mouthWidth: 0.46, mouthOpen: 0.08, mouthTilt: 0, browLift: 0 },
-  '😵': { eyeScale: 1.02, eyeTilt: 0.3, eyeSpread: 1.04, mouthWidth: 0.46, mouthOpen: 0.38, mouthTilt: 0.1, browLift: 0.02 },
-}
-
 function createCanvasTexture(canvas: HTMLCanvasElement) {
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
@@ -94,93 +71,7 @@ function drawPaintedBody(ctx: CanvasRenderingContext2D) {
   ctx.restore()
 }
 
-function drawEye(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  pupilX: number,
-  pupilY: number,
-  tilt: number,
-) {
-  ctx.save()
-  ctx.translate(x, y)
-  ctx.rotate(tilt)
-  ctx.fillStyle = '#fcfbf4'
-  ctx.beginPath()
-  ctx.ellipse(0, 0, width, height, 0, 0, Math.PI * 2)
-  ctx.fill()
-
-  ctx.fillStyle = '#2e1a16'
-  ctx.beginPath()
-  ctx.ellipse(pupilX, pupilY, width * 0.34, height * 0.4, 0, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.restore()
-}
-
-function drawClosedEye(ctx: CanvasRenderingContext2D, x: number, y: number, length: number, tilt: number) {
-  ctx.save()
-  ctx.translate(x, y)
-  ctx.rotate(tilt)
-  ctx.strokeStyle = '#2b1b17'
-  ctx.lineWidth = 10
-  ctx.lineCap = 'round'
-  ctx.beginPath()
-  ctx.moveTo(-length * 0.5, 0)
-  ctx.quadraticCurveTo(0, 12, length * 0.5, -4)
-  ctx.stroke()
-  ctx.restore()
-}
-
-function drawMouth(ctx: CanvasRenderingContext2D, preset: ExpressionPreset) {
-  ctx.save()
-  ctx.translate(484, 470)
-  ctx.rotate(preset.mouthTilt)
-  ctx.fillStyle = '#2e1715'
-  ctx.beginPath()
-  ctx.roundRect(-60 * preset.mouthWidth, -14, 120 * preset.mouthWidth, 28 + 20 * preset.mouthOpen, 12)
-  ctx.fill()
-  if (preset.mouthOpen > 0.65) {
-    ctx.fillStyle = '#fff8de'
-    ctx.fillRect(-42 * preset.mouthWidth, -2, 84 * preset.mouthWidth, 10)
-  }
-  ctx.restore()
-}
-
-function drawExpression(ctx: CanvasRenderingContext2D, emoji: string) {
-  const preset = presets[emoji] ?? presets['😀']
-  const eyeSpread = 132 * preset.eyeSpread
-  const frontEyeX = 396
-  const rearEyeX = frontEyeX - eyeSpread
-  const eyeY = 354 - preset.browLift * 24
-
-  if (emoji === '😌') {
-    drawClosedEye(ctx, rearEyeX, eyeY, 68, -0.2)
-    drawClosedEye(ctx, frontEyeX, eyeY + 4, 62, -0.08)
-  } else if (emoji === '😵') {
-    drawClosedEye(ctx, rearEyeX, eyeY, 58, 0.5)
-    drawClosedEye(ctx, rearEyeX, eyeY, 58, -0.5)
-    drawClosedEye(ctx, frontEyeX, eyeY, 52, 0.45)
-    drawClosedEye(ctx, frontEyeX, eyeY, 52, -0.45)
-  } else {
-    drawEye(ctx, rearEyeX, eyeY, 64 * preset.eyeScale, 82 * preset.eyeScale, -8, -4, -0.1 + preset.eyeTilt)
-    drawEye(ctx, frontEyeX, eyeY + 2, 72 * preset.eyeScale, 88 * preset.eyeScale, 6, 0, 0.08 + preset.eyeTilt)
-    if (emoji === '🥹' || emoji === '🥺') {
-      drawPaintBlob(ctx, rearEyeX - 16, eyeY + 44, 14, 18, 'rgba(255,255,255,0.8)')
-      drawPaintBlob(ctx, frontEyeX + 12, eyeY + 48, 12, 16, 'rgba(255,255,255,0.72)')
-    }
-  }
-
-  if (emoji === '😳') {
-    drawPaintBlob(ctx, 374, 436, 22, 14, 'rgba(241, 137, 84, 0.35)', 0.2)
-    drawPaintBlob(ctx, 570, 432, 18, 12, 'rgba(241, 137, 84, 0.32)', -0.2)
-  }
-
-  drawMouth(ctx, preset)
-}
-
-export function createFishSpriteTexture(emoji: string) {
+export function createFishSpriteTexture() {
   const canvas = document.createElement('canvas')
   canvas.width = 1024
   canvas.height = 768
@@ -194,7 +85,6 @@ export function createFishSpriteTexture(emoji: string) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   drawPaintedBody(ctx)
-  drawExpression(ctx, emoji)
 
   ctx.save()
   ctx.fillStyle = '#e1a022'
@@ -212,6 +102,27 @@ export function createFishSpriteTexture(emoji: string) {
   ctx.closePath()
   ctx.fill()
   ctx.restore()
+
+  return createCanvasTexture(canvas)
+}
+
+export function createEmojiFaceTexture(emoji: string) {
+  const canvas = document.createElement('canvas')
+  canvas.width = 512
+  canvas.height = 512
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    const texture = new THREE.Texture()
+    texture.needsUpdate = true
+    return texture
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.font = '400px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+  ctx.fillText(emoji, 256, 270)
 
   return createCanvasTexture(canvas)
 }

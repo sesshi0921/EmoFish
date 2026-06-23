@@ -2,13 +2,16 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { InputScreen } from './screens/InputScreen'
 import { LandingScreen } from './screens/LandingScreen'
 import { SwimScreen } from './screens/SwimScreen'
+import { isSupportedEmoji } from './lib/emoji'
 import './App.css'
 
 type AppPhase = 'input' | 'landing' | 'swim'
 
 function App() {
-  const [phase, setPhase] = useState<AppPhase>('input')
-  const [emoji, setEmoji] = useState('')
+  const initialEmoji = new URLSearchParams(window.location.search).get('fish') ?? ''
+  const hasInitialFish = isSupportedEmoji(initialEmoji)
+  const [phase, setPhase] = useState<AppPhase>(hasInitialFish ? 'landing' : 'input')
+  const [emoji, setEmoji] = useState(hasInitialFish ? initialEmoji : '')
   const [landingState, setLandingState] = useState<'falling' | 'flopping' | 'diving'>('falling')
   const landingTimerRef = useRef<number | null>(null)
   const diveTimerRef = useRef<number | null>(null)
