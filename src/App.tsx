@@ -2,12 +2,17 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { InputScreen } from './screens/InputScreen'
 import { LandingScreen } from './screens/LandingScreen'
 import { SwimScreen } from './screens/SwimScreen'
+import { DebugScreen } from './screens/DebugScreen'
 import { isSupportedEmoji } from './lib/emoji'
 import './App.css'
 
 type AppPhase = 'input' | 'landing' | 'swim'
 
 function App() {
+  if (window.location.pathname === '/debug') {
+    return <DebugScreen />
+  }
+
   const initialEmoji = new URLSearchParams(window.location.search).get('fish') ?? ''
   const hasInitialFish = isSupportedEmoji(initialEmoji)
   const [phase, setPhase] = useState<AppPhase>(hasInitialFish ? 'landing' : 'input')

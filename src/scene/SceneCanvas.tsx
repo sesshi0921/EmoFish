@@ -11,18 +11,31 @@ type SceneCanvasProps = {
   mode: 'landing' | 'swim'
   landingState?: 'falling' | 'flopping' | 'diving'
   onLandingReady?: () => void
+  fishEntries?: FishEntry[]
 }
 
-type FishActorProps = SceneCanvasProps
+export type FishEntry = {
+  id: string
+  emoji: string
+  exiting?: boolean
+}
 
-function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: FishActorProps) {
+type FishActorProps = SceneCanvasProps & {
+  entry: FishEntry
+  spawnIndex?: number
+}
+
+function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spawnIndex = 0 }: FishActorProps) {
   const groupRef = useRef<THREE.Group>(null)
   const motionRef = useRef({ tailAngle: 0, finAngle: 0, bodyBend: 0, speed: 0, turnRate: 0 })
-  const swimState = useMemo(() => createSwimState(Math.random() * Math.PI), [])
+  const swimState = useMemo(() => createSwimState(Math.random() * Math.PI + spawnIndex), [spawnIndex])
   const forwardRef = useRef(new THREE.Vector3(1, 0, 0))
   const directionRef = useRef(new THREE.Vector3(1, 0, 0))
   const orientationRef = useRef(new THREE.Quaternion())
   const targetOrientationRef = useRef(new THREE.Quaternion())
+  const bornAtRef = useRef<number | null>(null)
+  const exitAtRef = useRef<number | null>(null)
+  const [renderOpacity, setRenderOpacity] = useState(1)
   const [rippleBurst, setRippleBurst] = useState(0)
   const hasAnnouncedLanding = useRef(false)
   const diveRippleSent = useRef(false)
@@ -39,6 +52,12 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
     }
 
     const elapsed = state.clock.elapsedTime
+    if (bornAtRef.current === null) {
+      bornAtRef.current = elapsed
+    }
+    if (entry.exiting && exitAtRef.current === null) {
+      exitAtRef.current = elapsed
+    }
     let x = 0
     let y = 0
     let z = 0
@@ -49,6 +68,7 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
     let turnRateValue = 0
     let rotationZ = 0
     let swimDirection: THREE.Vector3 | null = null
+    let fadeOpacity = 1
 
     if (mode === 'landing') {
       if (landingState === 'falling') {
@@ -98,6 +118,20 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
       y = swimState.position.y
       z = swimState.position.z
 
+      const spawnT = THREE.MathUtils.clamp((elapsed - bornAtRef.current) / 1.15, 0, 1)
+      if (spawnT < 1) {
+        const eased = 1 - Math.pow(1 - spawnT, 3)
+        x = THREE.MathUtils.lerp(Math.sin(spawnIndex * 1.7) * 0.72, x, eased)
+        y = THREE.MathUtils.lerp(1.36, y, eased)
+        z = THREE.MathUtils.lerp(-0.42, z, eased)
+      }
+
+      if (exitAtRef.current !== null) {
+        const exitT = THREE.MathUtils.clamp((elapsed - exitAtRef.current) / 0.8, 0, 1)
+        fadeOpacity = 1 - exitT
+        y += exitT * 0.18
+      }
+
       const speed = swimState.velocity.length()
       const turn = THREE.MathUtils.clamp(swimState.turnRate * 0.34, -1, 1)
       swimDirection = directionRef.current
@@ -121,7 +155,8 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
       groupRef.current.rotation.set(0, 0, rotationZ)
       orientationRef.current.copy(groupRef.current.quaternion)
     }
-    groupRef.current.scale.set(1, 1, 1)
+    groupRef.current.scale.setScalar(THREE.MathUtils.lerp(0.82, 1, fadeOpacity))
+    setRenderOpacity((current) => (Math.abs(current - fadeOpacity) > 0.04 ? fadeOpacity : current))
     motionRef.current.tailAngle = tailAngle
     motionRef.current.finAngle = finAngle
     motionRef.current.bodyBend = bodyBend
@@ -132,14 +167,16 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
   return (
     <>
       <group ref={groupRef}>
-        <Fish emoji={emoji} motionRef={motionRef as FishMotionRef} />
+        <Fish emoji={entry.emoji} motionRef={motionRef as FishMotionRef} opacity={renderOpacity} />
       </group>
       <Ripples mode={mode} burst={rippleBurst} />
     </>
   )
 }
 
-export function SceneCanvas({ emoji, mode, landingState, onLandingReady }: SceneCanvasProps) {
+export function SceneCanvas({ emoji, mode, landingState, onLandingReady, fishEntries }: SceneCanvasProps) {
+  const entries = fishEntries ?? [{ id: 'single', emoji }]
+
   return (
     <Canvas
       className="scene-canvas"
@@ -173,7 +210,27 @@ export function SceneCanvas({ emoji, mode, landingState, onLandingReady }: Scene
         </>
       )}
 
-      <FishActor emoji={emoji} mode={mode} landingState={landingState} onLandingReady={onLandingReady} />
+      {mode === 'swim' ? (
+        entries.map((entry, index) => (
+          <FishActor
+            key={entry.id}
+            entry={entry}
+            emoji={entry.emoji}
+            mode={mode}
+            landingState={landingState}
+            onLandingReady={onLandingReady}
+            spawnIndex={index}
+          />
+        ))
+      ) : (
+        <FishActor
+          entry={{ id: 'landing', emoji }}
+          emoji={emoji}
+          mode={mode}
+          landingState={landingState}
+          onLandingReady={onLandingReady}
+        />
+      )}
     </Canvas>
   )
 }

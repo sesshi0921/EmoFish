@@ -21,9 +21,10 @@ export type FishMotionRef = RefObject<{
 type FishProps = {
   emoji: string
   motionRef: FishMotionRef
+  opacity?: number
 }
 
-export function Fish({ emoji, motionRef }: FishProps) {
+export function Fish({ emoji, motionRef, opacity = 1 }: FishProps) {
   const bodyTexture = useMemo(() => createFishBodyTexture(emoji), [emoji])
   const finTexture = useMemo(() => createFinTexture(), [])
   const bodyGeometry = useMemo(() => createFishBodyGeometry(), [])
@@ -39,11 +40,13 @@ export function Fish({ emoji, motionRef }: FishProps) {
     () =>
       new THREE.MeshStandardMaterial({
         map: bodyTexture,
+        transparent: opacity < 1,
+        opacity,
         roughness: 0.88,
         metalness: 0,
         side: THREE.DoubleSide,
       }),
-    [bodyTexture],
+    [bodyTexture, opacity],
   )
 
   const finMaterial = useMemo(
@@ -51,12 +54,13 @@ export function Fish({ emoji, motionRef }: FishProps) {
       new THREE.MeshStandardMaterial({
         map: finTexture,
         transparent: true,
+        opacity,
         alphaTest: 0.05,
         roughness: 0.9,
         metalness: 0,
         side: THREE.DoubleSide,
       }),
-    [finTexture],
+    [finTexture, opacity],
   )
 
   const outlineMaterial = useMemo(

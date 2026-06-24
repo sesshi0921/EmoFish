@@ -13,11 +13,11 @@ function getHalfHeight(normalizedX: number) {
   if (normalizedX < 0.42) {
     return THREE.MathUtils.lerp(0.24, 0.39, (normalizedX - 0.14) / 0.28)
   }
-  if (normalizedX < 0.76) {
-    return THREE.MathUtils.lerp(0.39, 0.38, (normalizedX - 0.42) / 0.34)
+  if (normalizedX < 0.7) {
+    return THREE.MathUtils.lerp(0.39, 0.38, (normalizedX - 0.42) / 0.28)
   }
-  const capT = (normalizedX - 0.76) / 0.24
-  return Math.max(0.03, Math.cos(capT * Math.PI * 0.5) * 0.38)
+  const capT = (normalizedX - 0.7) / 0.3
+  return Math.max(0.026, Math.cos(capT * Math.PI * 0.5) * 0.38)
 }
 
 function getHalfDepth(normalizedX: number) {
@@ -27,11 +27,11 @@ function getHalfDepth(normalizedX: number) {
   if (normalizedX < 0.46) {
     return THREE.MathUtils.lerp(0.15, 0.29, (normalizedX - 0.14) / 0.32)
   }
-  if (normalizedX < 0.76) {
-    return THREE.MathUtils.lerp(0.29, 0.28, (normalizedX - 0.46) / 0.3)
+  if (normalizedX < 0.7) {
+    return THREE.MathUtils.lerp(0.29, 0.28, (normalizedX - 0.46) / 0.24)
   }
-  const capT = (normalizedX - 0.76) / 0.24
-  return Math.max(0.025, Math.cos(capT * Math.PI * 0.5) * 0.28)
+  const capT = (normalizedX - 0.7) / 0.3
+  return Math.max(0.022, Math.cos(capT * Math.PI * 0.5) * 0.28)
 }
 
 export function createFishBodyGeometry() {

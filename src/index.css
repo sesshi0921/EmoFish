@@ -148,9 +148,40 @@ button,
 }
 
 .swim-screen {
+  position: relative;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 223, 120, 0.12)),
     linear-gradient(180deg, #fffde9 0%, #ffe993 28%, #f6cf48 100%);
+}
+
+.add-fish-bar {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 86px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 248, 210, 0.78);
+  backdrop-filter: blur(14px);
+}
+
+.add-fish-bar .emoji-input {
+  min-width: 0;
+  min-height: 58px;
+  padding: 8px 10px;
+  border-width: 3px;
+  font-size: 2.25rem;
+  box-shadow: none;
+}
+
+.add-fish-bar .gyo-button {
+  min-height: 58px;
+  padding: 10px 12px;
+  font-size: 1.18rem;
 }
 
 .scene-canvas {
@@ -167,4 +198,56 @@ button,
   .landing-hint {
     bottom: 32px;
   }
+}
+
+.debug-screen {
+  width: 100%;
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 223, 120, 0.16)),
+    linear-gradient(180deg, #fffde9 0%, #ffe993 42%, #f6cf48 100%);
+}
+
+.debug-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.debug-panel {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 248, 210, 0.86);
+}
+
+.debug-panel .emoji-input {
+  min-height: 100%;
+  padding: 6px;
+  border-width: 3px;
+  font-size: 2.1rem;
+  box-shadow: none;
+  grid-row: span 3;
+}
+
+.debug-control {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 54px;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.debug-control input[type='number'] {
+  width: 100%;
+  min-height: 34px;
+  padding: 2px 4px;
+  border: 2px solid #111;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.84);
+  text-align: center;
 }
