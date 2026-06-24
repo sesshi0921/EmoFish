@@ -9,11 +9,13 @@ import './App.css'
 type AppPhase = 'input' | 'landing' | 'swim'
 
 function App() {
-  if (window.location.pathname === '/debug') {
+  const params = new URLSearchParams(window.location.search)
+
+  if (window.location.pathname.endsWith('/debug') || params.get('debug') === '1') {
     return <DebugScreen />
   }
 
-  const initialEmoji = new URLSearchParams(window.location.search).get('fish') ?? ''
+  const initialEmoji = params.get('fish') ?? ''
   const hasInitialFish = isSupportedEmoji(initialEmoji)
   const [phase, setPhase] = useState<AppPhase>(hasInitialFish ? 'landing' : 'input')
   const [emoji, setEmoji] = useState(hasInitialFish ? initialEmoji : '')
