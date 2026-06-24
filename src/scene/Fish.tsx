@@ -2,7 +2,14 @@ import { useEffect, useMemo, useRef } from 'react'
 import type { RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { createFishSpriteTexture } from '../lib/fishTexture'
+import { createEmojiFaceTexture, createFinTexture, createFishBodyTexture } from '../lib/fishTexture'
+import {
+  createFinGeometry,
+  createFishBodyGeometry,
+  createHeadFaceGeometry,
+  deformFishBody,
+  type FishGeometry,
+} from '../lib/fishModel'
 
 export type FishMotionRef = RefObject<{
   tailAngle: number
@@ -17,68 +24,68 @@ type FishProps = {
   motionRef: FishMotionRef
 }
 
-type FishGeometry = THREE.BufferGeometry & {
-  userData: {
-    basePositions: Float32Array
-  }
-}
-
-function createFishPlaneGeometry() {
-  const geometry = new THREE.PlaneGeometry(2.18, 1.36, 50, 30) as unknown as FishGeometry
-  const uv = geometry.attributes.uv as THREE.BufferAttribute
-  for (let index = 0; index < uv.count; index += 1) {
-    const u = uv.getX(index)
-    const warpedU = u < 0.42 ? u * 0.48 : 0.2016 + ((u - 0.42) / 0.58) * 0.7984
-    uv.setXY(index, warpedU, uv.getY(index))
-  }
-  uv.needsUpdate = true
-  const basePositions = new Float32Array(geometry.attributes.position.array)
-  geometry.userData.basePositions = basePositions
-  return geometry
-}
-
-function updateFishGeometry(geometry: FishGeometry, motion: NonNullable<FishMotionRef['current']>) {
-  const positions = geometry.attributes.position as THREE.BufferAttribute
-  const base = geometry.userData.basePositions
-
-  for (let index = 0; index < positions.count; index += 1) {
-    const offset = index * 3
-    const baseX = base[offset]
-    const baseY = base[offset + 1]
-
-    const normalizedX = (baseX + 1.09) / 2.18
-    const bodyBlend = 1 - normalizedX
-    const tailBlend = 1 - THREE.MathUtils.smoothstep(normalizedX, 0.02, 0.42)
-    const headLock = THREE.MathUtils.smoothstep(0.56, 0.92, normalizedX)
-
-    const bend = motion.bodyBend * bodyBlend
-    const tailSwing = motion.tailAngle * tailBlend
-    const lateralOffset = Math.sin(baseY * 2.4) * (bend * 0.12 + tailSwing * 0.1)
-    const verticalOffset = Math.sin(normalizedX * Math.PI) * motion.turnRate * 0.04
-
-    const bodyRadiusX = Math.max(0, 1 - Math.pow(baseX / 0.98, 2))
-    const bodyRadiusY = Math.max(0, 1 - Math.pow(baseY / 0.56, 2))
-    const bulge = Math.sqrt(bodyRadiusX * bodyRadiusY) * (0.16 + headLock * 0.08)
-    const tailThickness = tailBlend * Math.max(0, 0.08 - Math.abs(baseY) * 0.1)
-    const speedCompression = motion.speed * headLock * 0.08
-
-    positions.setXYZ(
-      index,
-      baseX,
-      baseY + lateralOffset + verticalOffset,
-      bulge + tailThickness - speedCompression,
-    )
-  }
-
-  positions.needsUpdate = true
-  geometry.computeVertexNormals()
-}
-
 export function Fish({ emoji, motionRef }: FishProps) {
-  const spriteTexture = useMemo(() => createFishSpriteTexture(emoji), [emoji])
-  const bodyGeometry = useMemo(() => createFishPlaneGeometry(), [])
+  const bodyTexture = useMemo(() => createFishBodyTexture(), [])
+  const faceTexture = useMemo(() => createEmojiFaceTexture(emoji), [emoji])
+  const finTexture = useMemo(() => createFinTexture(), [])
+  const bodyGeometry = useMemo(() => createFishBodyGeometry(), [])
+  const faceGeometry = useMemo(() => createHeadFaceGeometry(), [])
+  const tailGeometry = useMemo(() => createFinGeometry(0.34, 0.44), [])
+  const pectoralGeometry = useMemo(() => createFinGeometry(0.28, 0.3), [])
   const rootRef = useRef<THREE.Group>(null)
   const bodyRef = useRef<THREE.Mesh>(null)
+  const faceRef = useRef<THREE.Mesh>(null)
+  const tailRef = useRef<THREE.Mesh>(null)
+  const topFinRef = useRef<THREE.Mesh>(null)
+  const sideFinRef = useRef<THREE.Mesh>(null)
+
+  const bodyMaterial = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        map: bodyTexture,
+        roughness: 0.88,
+        metalness: 0,
+        side: THREE.DoubleSide,
+      }),
+    [bodyTexture],
+  )
+
+  const faceMaterial = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        map: faceTexture,
+        transparent: true,
+        alphaTest: 0.03,
+        roughness: 0.96,
+        metalness: 0,
+        side: THREE.DoubleSide,
+      }),
+    [faceTexture],
+  )
+
+  const finMaterial = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        map: finTexture,
+        transparent: true,
+        alphaTest: 0.05,
+        roughness: 0.9,
+        metalness: 0,
+        side: THREE.DoubleSide,
+      }),
+    [finTexture],
+  )
+
+  const outlineMaterial = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: '#d58d13',
+        transparent: true,
+        opacity: 0.26,
+        side: THREE.BackSide,
+      }),
+    [],
+  )
 
   useFrame(() => {
     const motion = motionRef.current
@@ -86,47 +93,107 @@ export function Fish({ emoji, motionRef }: FishProps) {
       return
     }
 
+    deformFishBody(bodyGeometry as FishGeometry, motion)
+
+    const bend = motion.bodyBend + motion.turnRate * 0.12
+    const tail = motion.tailAngle
+
     if (rootRef.current) {
-      rootRef.current.rotation.z = motion.bodyBend * 0.12
-      rootRef.current.position.y = Math.sin(motion.finAngle * 1.4) * 0.012
+      rootRef.current.rotation.z = bend * 0.08
+      rootRef.current.rotation.y = 0.18 + Math.sin(motion.finAngle * 0.7) * 0.04
+      rootRef.current.position.y = Math.sin(motion.finAngle * 1.2) * 0.012
     }
 
-    updateFishGeometry(bodyGeometry, motion)
-
     if (bodyRef.current) {
-      bodyRef.current.rotation.z = motion.tailAngle * 0.02
+      bodyRef.current.rotation.z = bend * 0.04
+    }
+
+    if (faceRef.current) {
+      faceRef.current.rotation.y = -0.88 + bend * 0.04
+      faceRef.current.rotation.z = bend * 0.08
+    }
+
+    if (tailRef.current) {
+      tailRef.current.rotation.z = tail * 0.72 + bend * 0.24
+      tailRef.current.position.y = tail * 0.12 + bend * 0.08
+    }
+
+    if (topFinRef.current) {
+      topFinRef.current.rotation.z = -0.1 + bend * 0.18
+    }
+
+    if (sideFinRef.current) {
+      sideFinRef.current.rotation.z = 0.34 + Math.sin(motion.finAngle) * 0.18
+      sideFinRef.current.rotation.y = -0.42 + Math.sin(motion.finAngle * 1.4) * 0.08
     }
   })
 
   useEffect(() => {
     return () => {
-      spriteTexture.dispose()
+      bodyTexture.dispose()
+      faceTexture.dispose()
+      finTexture.dispose()
       bodyGeometry.dispose()
-    }
-  }, [bodyGeometry, spriteTexture])
-
-  const bodyMaterial = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        map: spriteTexture,
-        transparent: true,
-        alphaTest: 0.08,
-        roughness: 0.92,
-        metalness: 0,
-        side: THREE.DoubleSide,
-      }),
-    [spriteTexture],
-  )
-
-  useEffect(() => {
-    return () => {
+      faceGeometry.dispose()
+      tailGeometry.dispose()
+      pectoralGeometry.dispose()
       bodyMaterial.dispose()
+      faceMaterial.dispose()
+      finMaterial.dispose()
+      outlineMaterial.dispose()
     }
-  }, [bodyMaterial])
+  }, [
+    bodyGeometry,
+    bodyMaterial,
+    bodyTexture,
+    faceGeometry,
+    faceMaterial,
+    faceTexture,
+    finMaterial,
+    finTexture,
+    outlineMaterial,
+    pectoralGeometry,
+    tailGeometry,
+  ])
 
   return (
-    <group ref={rootRef} scale={[0.98, 0.88, 1]}>
+    <group ref={rootRef} scale={[0.5, 0.49, 0.5]}>
+      <mesh geometry={bodyGeometry} material={outlineMaterial} scale={[1.035, 1.035, 1.035]} />
       <mesh ref={bodyRef} geometry={bodyGeometry} material={bodyMaterial} />
+
+      <mesh
+        ref={faceRef}
+        geometry={faceGeometry}
+        material={faceMaterial}
+        position={[0.64, 0.02, 0.31]}
+        rotation={[0.02, -0.54, -0.02]}
+      />
+
+      <mesh
+        ref={tailRef}
+        geometry={tailGeometry}
+        material={finMaterial}
+        position={[-0.7, 0, 0]}
+        rotation={[0, 0.1, 0]}
+      />
+
+      <mesh
+        ref={topFinRef}
+        geometry={pectoralGeometry}
+        material={finMaterial}
+        position={[0.24, 0.43, -0.02]}
+        rotation={[0, 0.25, -0.12]}
+        scale={[0.88, 0.72, 1]}
+      />
+
+      <mesh
+        ref={sideFinRef}
+        geometry={pectoralGeometry}
+        material={finMaterial}
+        position={[0.18, -0.16, 0.24]}
+        rotation={[0.12, -0.42, 0.34]}
+        scale={[0.72, 0.56, 1]}
+      />
     </group>
   )
 }
