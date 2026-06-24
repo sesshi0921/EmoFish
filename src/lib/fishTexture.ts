@@ -150,10 +150,10 @@ export function createEmojiFaceTexture(emoji: string) {
   ctx.restore()
 
   ctx.globalCompositeOperation = 'destination-in'
-  const mask = ctx.createRadialGradient(384, 386, 154, 384, 386, 350)
+  const mask = ctx.createRadialGradient(384, 386, 126, 384, 386, 356)
   mask.addColorStop(0, 'rgba(0, 0, 0, 1)')
-  mask.addColorStop(0.62, 'rgba(0, 0, 0, 0.94)')
-  mask.addColorStop(0.86, 'rgba(0, 0, 0, 0.42)')
+  mask.addColorStop(0.56, 'rgba(0, 0, 0, 0.92)')
+  mask.addColorStop(0.82, 'rgba(0, 0, 0, 0.34)')
   mask.addColorStop(1, 'rgba(0, 0, 0, 0)')
   ctx.fillStyle = mask
   ctx.fillRect(0, 0, canvas.width, canvas.height)

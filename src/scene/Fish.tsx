@@ -100,7 +100,7 @@ export function Fish({ emoji, motionRef }: FishProps) {
 
     if (rootRef.current) {
       rootRef.current.rotation.z = bend * 0.08
-      rootRef.current.rotation.y = 0.18 + Math.sin(motion.finAngle * 0.7) * 0.04
+      rootRef.current.rotation.y = -0.48 + Math.sin(motion.finAngle * 0.7) * 0.055
       rootRef.current.position.y = Math.sin(motion.finAngle * 1.2) * 0.012
     }
 
@@ -109,8 +109,8 @@ export function Fish({ emoji, motionRef }: FishProps) {
     }
 
     if (faceRef.current) {
-      faceRef.current.rotation.y = -0.88 + bend * 0.04
-      faceRef.current.rotation.z = bend * 0.08
+      faceRef.current.rotation.y = bend * 0.018
+      faceRef.current.rotation.z = bend * 0.035
     }
 
     if (tailRef.current) {
@@ -165,15 +165,15 @@ export function Fish({ emoji, motionRef }: FishProps) {
         ref={faceRef}
         geometry={faceGeometry}
         material={faceMaterial}
-        position={[0.64, 0.02, 0.31]}
-        rotation={[0.02, -0.54, -0.02]}
+        position={[0.51, 0.015, 0.02]}
+        rotation={[0, 0, 0]}
       />
 
       <mesh
         ref={tailRef}
         geometry={tailGeometry}
         material={finMaterial}
-        position={[-0.7, 0, 0]}
+        position={[-0.53, 0, 0]}
         rotation={[0, 0.1, 0]}
       />
 
@@ -181,7 +181,7 @@ export function Fish({ emoji, motionRef }: FishProps) {
         ref={topFinRef}
         geometry={pectoralGeometry}
         material={finMaterial}
-        position={[0.24, 0.43, -0.02]}
+        position={[0.18, 0.35, -0.02]}
         rotation={[0, 0.25, -0.12]}
         scale={[0.88, 0.72, 1]}
       />
@@ -190,7 +190,7 @@ export function Fish({ emoji, motionRef }: FishProps) {
         ref={sideFinRef}
         geometry={pectoralGeometry}
         material={finMaterial}
-        position={[0.18, -0.16, 0.24]}
+        position={[0.12, -0.13, 0.2]}
         rotation={[0.12, -0.42, 0.34]}
         scale={[0.72, 0.56, 1]}
       />

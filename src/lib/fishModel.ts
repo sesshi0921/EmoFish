@@ -8,37 +8,37 @@ export type FishGeometry = THREE.BufferGeometry & {
 
 function getHalfHeight(normalizedX: number) {
   if (normalizedX < 0.14) {
-    return THREE.MathUtils.lerp(0.08, 0.3, normalizedX / 0.14)
+    return THREE.MathUtils.lerp(0.06, 0.24, normalizedX / 0.14)
   }
   if (normalizedX < 0.42) {
-    return THREE.MathUtils.lerp(0.3, 0.49, (normalizedX - 0.14) / 0.28)
+    return THREE.MathUtils.lerp(0.24, 0.39, (normalizedX - 0.14) / 0.28)
   }
   if (normalizedX < 0.76) {
-    return THREE.MathUtils.lerp(0.49, 0.48, (normalizedX - 0.42) / 0.34)
+    return THREE.MathUtils.lerp(0.39, 0.38, (normalizedX - 0.42) / 0.34)
   }
   const capT = (normalizedX - 0.76) / 0.24
-  return Math.max(0.035, Math.cos(capT * Math.PI * 0.5) * 0.48)
+  return Math.max(0.03, Math.cos(capT * Math.PI * 0.5) * 0.38)
 }
 
 function getHalfDepth(normalizedX: number) {
   if (normalizedX < 0.14) {
-    return THREE.MathUtils.lerp(0.04, 0.2, normalizedX / 0.14)
+    return THREE.MathUtils.lerp(0.03, 0.15, normalizedX / 0.14)
   }
   if (normalizedX < 0.46) {
-    return THREE.MathUtils.lerp(0.2, 0.38, (normalizedX - 0.14) / 0.32)
+    return THREE.MathUtils.lerp(0.15, 0.29, (normalizedX - 0.14) / 0.32)
   }
   if (normalizedX < 0.76) {
-    return THREE.MathUtils.lerp(0.38, 0.36, (normalizedX - 0.46) / 0.3)
+    return THREE.MathUtils.lerp(0.29, 0.28, (normalizedX - 0.46) / 0.3)
   }
   const capT = (normalizedX - 0.76) / 0.24
-  return Math.max(0.03, Math.cos(capT * Math.PI * 0.5) * 0.36)
+  return Math.max(0.025, Math.cos(capT * Math.PI * 0.5) * 0.28)
 }
 
 export function createFishBodyGeometry() {
   const lengthSegments = 58
   const radialSegments = 30
-  const noseX = 0.74
-  const tailX = -0.68
+  const noseX = 0.66
+  const tailX = -0.58
   const positions: number[] = []
   const uvs: number[] = []
   const indices: number[] = []
@@ -97,20 +97,46 @@ export function createFinGeometry(width: number, height: number) {
 }
 
 export function createHeadFaceGeometry() {
-  const geometry = new THREE.PlaneGeometry(0.76, 0.7, 18, 18)
-  const positions = geometry.attributes.position as THREE.BufferAttribute
+  const columns = 34
+  const rows = 30
+  const positions: number[] = []
+  const uvs: number[] = []
+  const indices: number[] = []
+  const halfWidth = 0.37
+  const halfHeight = 0.35
+  const capDepth = 0.15
 
-  for (let index = 0; index < positions.count; index += 1) {
-    const x = positions.getX(index)
-    const y = positions.getY(index)
-    const normalizedX = x / 0.38
-    const normalizedY = y / 0.35
-    const edge = Math.min(1, normalizedX * normalizedX + normalizedY * normalizedY)
-    positions.setZ(index, (1 - edge) * 0.08)
-    positions.setX(index, x * (1 - Math.abs(normalizedY) * 0.08))
+  for (let row = 0; row <= rows; row += 1) {
+    const v = row / rows
+    const yT = 1 - v * 2
+
+    for (let column = 0; column <= columns; column += 1) {
+      const u = column / columns
+      const xT = u * 2 - 1
+      const radius = Math.min(1, xT * xT * 0.7 + yT * yT * 0.9)
+      const cap = Math.sqrt(Math.max(0, 1 - radius))
+      const edgeTaper = 1 - radius * 0.14
+
+      positions.push(cap * capDepth, yT * halfHeight, xT * halfWidth * edgeTaper)
+      uvs.push(u, v)
+    }
   }
 
-  positions.needsUpdate = true
+  const rowSize = columns + 1
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const a = row * rowSize + column
+      const b = a + 1
+      const c = a + rowSize
+      const d = c + 1
+      indices.push(a, c, b, b, c, d)
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
+  geometry.setIndex(indices)
   geometry.computeVertexNormals()
   return geometry
 }
@@ -132,7 +158,7 @@ export function deformFishBody(
     const baseX = base[offset]
     const baseY = base[offset + 1]
     const baseZ = base[offset + 2]
-    const normalizedX = THREE.MathUtils.clamp((baseX + 0.68) / 1.42, 0, 1)
+    const normalizedX = THREE.MathUtils.clamp((baseX + 0.58) / 1.24, 0, 1)
 
     const headLock = THREE.MathUtils.smoothstep(normalizedX, 0.64, 1)
     const tailInfluence = 1 - THREE.MathUtils.smoothstep(normalizedX, 0.08, 0.48)
