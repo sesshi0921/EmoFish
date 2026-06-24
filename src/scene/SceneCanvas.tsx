@@ -44,7 +44,6 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
     let speedValue = 0
     let turnRateValue = 0
     let rotationZ = 0
-    let facing = 1
 
     if (mode === 'landing') {
       if (landingState === 'falling') {
@@ -54,7 +53,6 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
         rotationZ = THREE.MathUtils.lerp(-0.34, 0.1, fallT)
         tailAngle = Math.sin(elapsed * 16) * 0.08
         speedValue = 0.04
-        facing = 1
 
         if (fallT >= 1 && !hasAnnouncedLanding.current) {
           hasAnnouncedLanding.current = true
@@ -72,7 +70,6 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
         bodyBend = flop * 0.42 + kick * 0.16
         speedValue = 0.24 + kick * 0.18
         turnRateValue = flop * 0.36
-        facing = flop < 0 ? -1 : 1
       } else {
         const diveT = Math.min((elapsed % 10) / 0.9, 1)
         x = THREE.MathUtils.lerp(0, 1.04, diveT) - Math.sin(diveT * Math.PI) * 0.08
@@ -84,7 +81,6 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
         bodyBend = 0.12 + Math.sin(diveT * Math.PI) * 0.08
         speedValue = 0.46
         turnRateValue = -0.22
-        facing = 1
 
         if (diveT > 0.4 && !diveRippleSent.current) {
           diveRippleSent.current = true
@@ -99,20 +95,20 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
 
       const speed = swimState.velocity.length()
       const heading = swimState.heading
-      const turn = THREE.MathUtils.clamp(swimState.turnRate * 0.22, -1, 1)
-      rotationZ = heading * 0.46
+      const turn = THREE.MathUtils.clamp(swimState.turnRate * 0.34, -1, 1)
+      rotationZ = heading
       tailAngle =
-        Math.sin(elapsed * (5.2 + speed * 16)) * (0.16 + speed * 0.56 + Math.abs(turn) * 0.34)
+        Math.sin(elapsed * (5.2 + speed * 16)) * (0.16 + speed * 0.54 + Math.abs(turn) * 0.22) -
+        turn * 0.34
       finAngle = Math.sin(elapsed * (8 + speed * 18)) * (0.14 + speed * 0.16)
-      bodyBend = turn * 0.46 + Math.sin(elapsed * (2 + speed * 1.6)) * 0.03
+      bodyBend = -turn * 0.58 + Math.sin(elapsed * (2 + speed * 1.6)) * 0.025
       speedValue = speed
       turnRateValue = swimState.turnRate
-      facing = swimState.velocity.x >= 0 ? 1 : -1
     }
 
     groupRef.current.position.set(x, y, z)
     groupRef.current.rotation.set(0, 0, rotationZ)
-    groupRef.current.scale.set(facing, 1, 1)
+    groupRef.current.scale.set(1, 1, 1)
     motionRef.current.tailAngle = tailAngle
     motionRef.current.finAngle = finAngle
     motionRef.current.bodyBend = bodyBend
