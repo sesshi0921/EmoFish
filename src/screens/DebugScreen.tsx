@@ -29,6 +29,7 @@ export function DebugScreen() {
 
   return (
     <main className="debug-screen">
+      <div className="debug-badge">DEBUG</div>
       <Canvas
         className="debug-canvas"
         dpr={[1, 2]}

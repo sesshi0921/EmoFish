@@ -43,10 +43,21 @@ function getDominantEmojiColor(canvas: HTMLCanvasElement) {
 
   const image = ctx.getImageData(0, 0, canvas.width, canvas.height)
   const bins = new Map<string, { count: number; r: number; g: number; b: number }>()
+  const centerX = canvas.width * 0.5
+  const centerY = canvas.height * 0.53
+  const maxRadius = canvas.width * 0.5
 
   for (let index = 0; index < image.data.length; index += 16) {
     const alpha = image.data[index + 3]
     if (alpha < 48) {
+      continue
+    }
+
+    const pixelIndex = index / 4
+    const x = pixelIndex % canvas.width
+    const y = Math.floor(pixelIndex / canvas.width)
+    const radius = Math.hypot((x - centerX) / maxRadius, (y - centerY) / maxRadius)
+    if (radius < 0.38 || radius > 0.78) {
       continue
     }
 
