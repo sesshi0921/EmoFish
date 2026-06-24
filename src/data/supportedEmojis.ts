@@ -1,1 +1,1 @@
-export const supportedEmojis = ['😀', '🥹', '🙃', '😌', '😳', '😮', '🥺', '🫠', '😶', '😵']
+export const supportedEmojis = ['😀', '🥹', '🙃', '😌', '😳', '😮', '🥺', '🫠', '😶', '😵', '🫪']

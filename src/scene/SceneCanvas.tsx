@@ -17,7 +17,7 @@ type FishActorProps = SceneCanvasProps
 
 function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: FishActorProps) {
   const groupRef = useRef<THREE.Group>(null)
-  const motionRef = useRef({ tailAngle: 0, finAngle: 0, bodyBend: 0 })
+  const motionRef = useRef({ tailAngle: 0, finAngle: 0, bodyBend: 0, speed: 0, turnRate: 0 })
   const swimState = useMemo(() => createSwimState(Math.random() * Math.PI), [])
   const [rippleBurst, setRippleBurst] = useState(0)
   const hasAnnouncedLanding = useRef(false)
@@ -41,16 +41,19 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
     let tailAngle = 0
     let finAngle = 0
     let bodyBend = 0
+    let speedValue = 0
+    let turnRateValue = 0
     let rotationZ = 0
     let facing = 1
 
     if (mode === 'landing') {
       if (landingState === 'falling') {
-        const fallT = Math.min(elapsed / 0.85, 1)
-        x = Math.sin(fallT * Math.PI) * 0.12
+        const fallT = Math.min(elapsed / 0.9, 1)
+        x = Math.sin(fallT * Math.PI) * 0.1
         y = THREE.MathUtils.lerp(1.42, -0.64, 1 - Math.pow(1 - fallT, 2))
-        rotationZ = THREE.MathUtils.lerp(-0.4, 0.15, fallT)
+        rotationZ = THREE.MathUtils.lerp(-0.34, 0.1, fallT)
         tailAngle = Math.sin(elapsed * 16) * 0.08
+        speedValue = 0.04
         facing = 1
 
         if (fallT >= 1 && !hasAnnouncedLanding.current) {
@@ -58,25 +61,29 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
           onLandingReady?.()
         }
       } else if (landingState === 'flopping') {
-        const flop = Math.sin(elapsed * 8.4)
-        const kick = Math.max(0, Math.sin(elapsed * 4.2))
-        x = Math.sin(elapsed * 2.8) * 0.18
-        y = -0.64 + Math.abs(flop) * 0.2
-        z = Math.sin(elapsed * 3.2) * 0.06
-        rotationZ = flop * 0.5
-        tailAngle = Math.sin(elapsed * 18) * 0.7
-        finAngle = Math.sin(elapsed * 11.2) * 0.8
-        bodyBend = flop * 0.34 + kick * 0.18
+        const flop = Math.sin(elapsed * 7.6)
+        const kick = Math.max(0, Math.sin(elapsed * 4.8))
+        x = Math.sin(elapsed * 2.4) * 0.2
+        y = -0.66 + Math.abs(flop) * 0.24
+        z = Math.sin(elapsed * 3.8) * 0.05
+        rotationZ = flop * 0.42
+        tailAngle = Math.sin(elapsed * 19.4) * (0.62 + kick * 0.18)
+        finAngle = Math.sin(elapsed * 12.2) * 0.9
+        bodyBend = flop * 0.42 + kick * 0.16
+        speedValue = 0.24 + kick * 0.18
+        turnRateValue = flop * 0.36
         facing = flop < 0 ? -1 : 1
       } else {
         const diveT = Math.min((elapsed % 10) / 0.9, 1)
-        x = THREE.MathUtils.lerp(0, 0.9, diveT)
-        y = THREE.MathUtils.lerp(-0.52, -1.12, diveT * diveT)
+        x = THREE.MathUtils.lerp(0, 1.04, diveT) - Math.sin(diveT * Math.PI) * 0.08
+        y = THREE.MathUtils.lerp(-0.48, -1.14, diveT * diveT) - Math.sin(diveT * Math.PI) * 0.1
         z = THREE.MathUtils.lerp(0, -0.24, diveT)
-        rotationZ = THREE.MathUtils.lerp(-0.1, -0.95, diveT)
-        tailAngle = Math.sin(elapsed * 24) * (0.5 - diveT * 0.12)
+        rotationZ = THREE.MathUtils.lerp(-0.08, -0.9, diveT)
+        tailAngle = Math.sin(elapsed * 25) * (0.46 - diveT * 0.1)
         finAngle = Math.sin(elapsed * 15) * 0.5
-        bodyBend = 0.18
+        bodyBend = 0.12 + Math.sin(diveT * Math.PI) * 0.08
+        speedValue = 0.46
+        turnRateValue = -0.22
         facing = 1
 
         if (diveT > 0.4 && !diveRippleSent.current) {
@@ -91,12 +98,15 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
       z = swimState.position.z
 
       const speed = swimState.velocity.length()
-      const heading = Math.atan2(swimState.velocity.y, swimState.velocity.x)
-      const turn = THREE.MathUtils.clamp(swimState.target.y - swimState.position.y, -1, 1)
+      const heading = swimState.heading
+      const turn = THREE.MathUtils.clamp(swimState.turnRate * 0.22, -1, 1)
       rotationZ = heading * 0.46
-      tailAngle = Math.sin(elapsed * (6 + speed * 14)) * (0.24 + speed * 0.52 + Math.abs(turn) * 0.2)
-      finAngle = Math.sin(elapsed * (9 + speed * 20)) * 0.26
-      bodyBend = turn * 0.34 + Math.sin(elapsed * 2.1) * 0.06
+      tailAngle =
+        Math.sin(elapsed * (5.2 + speed * 16)) * (0.16 + speed * 0.56 + Math.abs(turn) * 0.34)
+      finAngle = Math.sin(elapsed * (8 + speed * 18)) * (0.14 + speed * 0.16)
+      bodyBend = turn * 0.46 + Math.sin(elapsed * (2 + speed * 1.6)) * 0.03
+      speedValue = speed
+      turnRateValue = swimState.turnRate
       facing = swimState.velocity.x >= 0 ? 1 : -1
     }
 
@@ -106,6 +116,8 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
     motionRef.current.tailAngle = tailAngle
     motionRef.current.finAngle = finAngle
     motionRef.current.bodyBend = bodyBend
+    motionRef.current.speed = speedValue
+    motionRef.current.turnRate = turnRateValue
   })
 
   return (
