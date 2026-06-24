@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { EmojiInput } from '../components/EmojiInput'
 import { GyoButton } from '../components/GyoButton'
 import { SceneCanvas } from '../scene/SceneCanvas'
@@ -11,7 +11,25 @@ type SwimScreenProps = {
 export function SwimScreen({ emoji }: SwimScreenProps) {
   const nextIdRef = useRef(1)
   const [nextEmoji, setNextEmoji] = useState('')
-  const [fishEntries, setFishEntries] = useState<FishEntry[]>([{ id: 'fish-0', emoji }])
+  const [fishEntries, setFishEntries] = useState<FishEntry[]>([])
+
+  useEffect(() => {
+    if (!emoji) {
+      return
+    }
+
+    setFishEntries((current) => {
+      if (current.length === 0) {
+        return [{ id: 'fish-0', emoji }]
+      }
+
+      if (current.length === 1 && current[0].id === 'fish-0') {
+        return [{ ...current[0], emoji }]
+      }
+
+      return current
+    })
+  }, [emoji])
 
   const handleAddFish = () => {
     if (!nextEmoji) {
