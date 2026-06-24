@@ -132,12 +132,12 @@ export function deformFishBody(
     const baseX = base[offset]
     const baseY = base[offset + 1]
     const baseZ = base[offset + 2]
-    const normalizedX = (baseX + 0.68) / 1.42
+    const normalizedX = THREE.MathUtils.clamp((baseX + 0.68) / 1.42, 0, 1)
 
     const headLock = THREE.MathUtils.smoothstep(normalizedX, 0.64, 1)
     const tailInfluence = 1 - THREE.MathUtils.smoothstep(normalizedX, 0.08, 0.48)
 
-    const bendOffset = motion.bodyBend * Math.pow(1 - normalizedX, 1.35) * 0.3
+    const bendOffset = motion.bodyBend * Math.pow(Math.max(0, 1 - normalizedX), 1.35) * 0.3
     const tailOffset = motion.tailAngle * tailInfluence * 0.24
     const turnLift = motion.turnRate * (0.08 + tailInfluence * 0.06) * (1 - Math.abs(baseY) * 1.4)
     const speedCompression = motion.speed * headLock * 0.045
