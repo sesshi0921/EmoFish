@@ -2,13 +2,11 @@ import { useEffect, useMemo, useRef } from 'react'
 import type { RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { createEmojiFaceTexture, createFinTexture, createFishBodyTexture } from '../lib/fishTexture'
+import { createFinTexture, createFishBodyTexture } from '../lib/fishTexture'
 import {
   createFinGeometry,
   createFishBodyGeometry,
-  createHeadFaceGeometry,
   deformFishBody,
-  deformFishFace,
   type FishGeometry,
 } from '../lib/fishModel'
 
@@ -26,16 +24,13 @@ type FishProps = {
 }
 
 export function Fish({ emoji, motionRef }: FishProps) {
-  const bodyTexture = useMemo(() => createFishBodyTexture(), [])
-  const faceTexture = useMemo(() => createEmojiFaceTexture(emoji), [emoji])
+  const bodyTexture = useMemo(() => createFishBodyTexture(emoji), [emoji])
   const finTexture = useMemo(() => createFinTexture(), [])
   const bodyGeometry = useMemo(() => createFishBodyGeometry(), [])
-  const faceGeometry = useMemo(() => createHeadFaceGeometry(), [])
-  const tailGeometry = useMemo(() => createFinGeometry(0.34, 0.44), [])
+  const tailGeometry = useMemo(() => createFinGeometry(0.44, 0.56), [])
   const pectoralGeometry = useMemo(() => createFinGeometry(0.28, 0.3), [])
   const rootRef = useRef<THREE.Group>(null)
   const bodyRef = useRef<THREE.Mesh>(null)
-  const faceRef = useRef<THREE.Mesh>(null)
   const tailRef = useRef<THREE.Mesh>(null)
   const topFinRef = useRef<THREE.Mesh>(null)
   const sideFinRef = useRef<THREE.Mesh>(null)
@@ -64,21 +59,6 @@ export function Fish({ emoji, motionRef }: FishProps) {
     [finTexture],
   )
 
-  const faceMaterial = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        map: faceTexture,
-        transparent: true,
-        alphaTest: 0.04,
-        roughness: 0.96,
-        metalness: 0,
-        side: THREE.DoubleSide,
-        polygonOffset: true,
-        polygonOffsetFactor: -1,
-      }),
-    [faceTexture],
-  )
-
   const outlineMaterial = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
@@ -97,7 +77,6 @@ export function Fish({ emoji, motionRef }: FishProps) {
     }
 
     deformFishBody(bodyGeometry as FishGeometry, motion)
-    deformFishFace(faceGeometry as FishGeometry, motion)
 
     const bend = motion.bodyBend + motion.turnRate * 0.12
     const tail = motion.tailAngle
@@ -129,14 +108,11 @@ export function Fish({ emoji, motionRef }: FishProps) {
   useEffect(() => {
     return () => {
       bodyTexture.dispose()
-      faceTexture.dispose()
       finTexture.dispose()
       bodyGeometry.dispose()
-      faceGeometry.dispose()
       tailGeometry.dispose()
       pectoralGeometry.dispose()
       bodyMaterial.dispose()
-      faceMaterial.dispose()
       finMaterial.dispose()
       outlineMaterial.dispose()
     }
@@ -144,9 +120,6 @@ export function Fish({ emoji, motionRef }: FishProps) {
     bodyGeometry,
     bodyMaterial,
     bodyTexture,
-    faceGeometry,
-    faceMaterial,
-    faceTexture,
     finMaterial,
     finTexture,
     outlineMaterial,
@@ -158,12 +131,6 @@ export function Fish({ emoji, motionRef }: FishProps) {
     <group ref={rootRef} scale={[0.5, 0.49, 0.5]}>
       <mesh geometry={bodyGeometry} material={outlineMaterial} scale={[1.035, 1.035, 1.035]} />
       <mesh ref={bodyRef} geometry={bodyGeometry} material={bodyMaterial} />
-
-      <mesh
-        ref={faceRef}
-        geometry={faceGeometry}
-        material={faceMaterial}
-      />
 
       <mesh
         ref={tailRef}
@@ -188,7 +155,7 @@ export function Fish({ emoji, motionRef }: FishProps) {
         material={finMaterial}
         position={[0.12, -0.13, 0.2]}
         rotation={[0.12, -0.42, 0.34]}
-        scale={[0.8, 0.62, 1]}
+        scale={[1.02, 0.82, 1]}
       />
     </group>
   )

@@ -27,7 +27,7 @@ function drawPaintStroke(
   ctx.restore()
 }
 
-export function createFishBodyTexture() {
+export function createFishBodyTexture(emoji = '') {
   const canvas = document.createElement('canvas')
   canvas.width = 1024
   canvas.height = 512
@@ -48,7 +48,49 @@ export function createFishBodyTexture() {
   drawPaintStroke(ctx, 516, 252, 420, 14, 'rgba(255, 250, 176, 0.34)', -0.02)
   drawPaintStroke(ctx, 280, 372, 220, 40, 'rgba(220, 142, 14, 0.22)', 0.22)
 
+  if (emoji) {
+    drawFacePatch(ctx, emoji)
+  }
+
   return createCanvasTexture(canvas)
+}
+
+function drawFacePatch(ctx: CanvasRenderingContext2D, emoji: string) {
+  const source = createRawEmojiCanvas(emoji)
+  paintifyEmoji(source)
+
+  const centerX = 824
+  const centerY = 256
+  const width = 430
+  const height = 472
+
+  ctx.save()
+  ctx.beginPath()
+  ctx.ellipse(centerX, centerY, width * 0.52, height * 0.52, 0, 0, Math.PI * 2)
+  ctx.clip()
+
+  ctx.filter = 'blur(18px)'
+  ctx.globalAlpha = 0.32
+  ctx.drawImage(source, centerX - width * 0.66, centerY - height * 0.62, width * 1.32, height * 1.24)
+
+  ctx.filter = 'blur(5px)'
+  ctx.globalAlpha = 0.42
+  ctx.drawImage(source, centerX - width * 0.61, centerY - height * 0.57, width * 1.22, height * 1.14)
+
+  ctx.filter = 'none'
+  ctx.globalAlpha = 0.92
+  ctx.drawImage(source, centerX - width * 0.56, centerY - height * 0.52, width * 1.12, height * 1.04)
+  ctx.restore()
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'source-atop'
+  const blend = ctx.createRadialGradient(centerX, centerY, 116, centerX, centerY, 254)
+  blend.addColorStop(0, 'rgba(248, 198, 47, 0)')
+  blend.addColorStop(0.72, 'rgba(248, 198, 47, 0.1)')
+  blend.addColorStop(1, 'rgba(248, 198, 47, 0.48)')
+  ctx.fillStyle = blend
+  ctx.fillRect(centerX - width * 0.58, centerY - height * 0.56, width * 1.16, height * 1.12)
+  ctx.restore()
 }
 
 function createRawEmojiCanvas(emoji: string) {

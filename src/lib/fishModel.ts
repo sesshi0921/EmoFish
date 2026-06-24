@@ -56,7 +56,16 @@ export function createFishBodyGeometry() {
       const z = Math.sin(angle) * halfDepth
 
       positions.push(x, y, z)
-      uvs.push(xT, radialIndex / radialSegments)
+      if (normalizedX >= 0.78) {
+        const faceU = 0.805 + (z / 0.28) * 0.164
+        const faceV = 0.5 - (y / 0.38) * 0.373
+        uvs.push(
+          THREE.MathUtils.clamp(faceU, 0.64, 0.97),
+          THREE.MathUtils.clamp(faceV, 0.13, 0.87),
+        )
+      } else {
+        uvs.push(xT, radialIndex / radialSegments)
+      }
     }
   }
 
@@ -96,54 +105,6 @@ export function createFinGeometry(width: number, height: number) {
   return geometry
 }
 
-export function createHeadFaceGeometry() {
-  const columns = 36
-  const rows = 32
-  const positions: number[] = []
-  const uvs: number[] = []
-  const indices: number[] = []
-  const noseX = 0.66
-  const tailX = -0.58
-
-  for (let row = 0; row <= rows; row += 1) {
-    const v = row / rows
-    const yT = 1 - v * 2
-
-    for (let column = 0; column <= columns; column += 1) {
-      const u = column / columns
-      const zT = u * 2 - 1
-      const radius = Math.min(1, Math.sqrt(zT * zT * 0.72 + yT * yT * 0.86))
-      const normalizedX = THREE.MathUtils.lerp(1, 0.78, Math.pow(radius, 1.12))
-      const edgeTaper = 1 - Math.pow(radius, 1.4) * 0.04
-      const x = THREE.MathUtils.lerp(tailX, noseX, normalizedX)
-      const halfHeight = getHalfHeight(normalizedX)
-      const halfDepth = getHalfDepth(normalizedX)
-
-      positions.push(x, yT * halfHeight * edgeTaper, zT * halfDepth * edgeTaper)
-      uvs.push(u, v)
-    }
-  }
-
-  const rowSize = columns + 1
-  for (let row = 0; row < rows; row += 1) {
-    for (let column = 0; column < columns; column += 1) {
-      const a = row * rowSize + column
-      const b = a + 1
-      const c = a + rowSize
-      const d = c + 1
-      indices.push(a, c, b, b, c, d)
-    }
-  }
-
-  const geometry = new THREE.BufferGeometry() as FishGeometry
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
-  geometry.setIndex(indices)
-  geometry.computeVertexNormals()
-  geometry.userData.basePositions = new Float32Array(positions)
-  return geometry
-}
-
 export function deformFishBody(
   geometry: FishGeometry,
   motion: {
@@ -154,18 +115,6 @@ export function deformFishBody(
   },
 ) {
   deformFishGeometry(geometry, motion, 1)
-}
-
-export function deformFishFace(
-  geometry: FishGeometry,
-  motion: {
-    tailAngle: number
-    bodyBend: number
-    speed: number
-    turnRate: number
-  },
-) {
-  deformFishGeometry(geometry, motion, 0.08)
 }
 
 function deformFishGeometry(
