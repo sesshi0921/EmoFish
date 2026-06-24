@@ -9,9 +9,10 @@ type LandingScreenProps = {
 
 export function LandingScreen({ emoji, state, onDive, onLandingReady }: LandingScreenProps) {
   return (
-    <button className="landing-screen" type="button" onClick={onDive}>
+    <div className="landing-screen">
       <SceneCanvas emoji={emoji} mode="landing" landingState={state} onLandingReady={onLandingReady} />
+      <button className="landing-tap-layer" type="button" aria-label="Dive" onClick={onDive} />
       <span className="landing-hint">{state === 'diving' ? 'Splash...' : 'Tap to let it dive'}</span>
-    </button>
+    </div>
   )
 }

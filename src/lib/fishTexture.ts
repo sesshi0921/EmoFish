@@ -165,10 +165,10 @@ function paintifyEmoji(canvas: HTMLCanvasElement) {
       continue
     }
 
-    const tone = lightness / 255
-    pixels[index] = 230 + Math.round(tone * 24)
-    pixels[index + 1] = 166 + Math.round(tone * 44)
-    pixels[index + 2] = 22 + Math.round(tone * 28)
+    const tone = (lightness - 110) / 145
+    pixels[index] = 242 + Math.round(THREE.MathUtils.clamp(tone, 0, 1) * 10)
+    pixels[index + 1] = 184 + Math.round(THREE.MathUtils.clamp(tone, 0, 1) * 22)
+    pixels[index + 2] = 34 + Math.round(THREE.MathUtils.clamp(tone, 0, 1) * 18)
   }
 
   ctx.putImageData(image, 0, 0)

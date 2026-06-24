@@ -134,8 +134,21 @@ button,
   cursor: pointer;
 }
 
+.landing-tap-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 .landing-hint {
   position: absolute;
+  z-index: 3;
   left: 50%;
   bottom: max(26px, env(safe-area-inset-bottom));
   transform: translateX(-50%);

@@ -42,9 +42,9 @@ export function DebugScreen() {
         camera={{ position: [0, 0, 4.4], fov: 38 }}
         gl={{ alpha: true, antialias: true }}
       >
-        <ambientLight intensity={2.2} />
-        <directionalLight position={[2.6, 4, 3.2]} intensity={1.6} />
-        <hemisphereLight args={['#fff7c8', '#e8ad19', 0.8]} />
+        <ambientLight intensity={1.55} />
+        <directionalLight position={[2.6, 4, 3.2]} intensity={0.72} />
+        <hemisphereLight args={['#fff7c8', '#e8ad19', 0.48]} />
         <DebugFish emoji={emoji || '🫪'} yaw={yaw} pitch={pitch} roll={roll} />
       </Canvas>
 

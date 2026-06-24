@@ -35,6 +35,7 @@ function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spaw
   const targetOrientationRef = useRef(new THREE.Quaternion())
   const bornAtRef = useRef<number | null>(null)
   const exitAtRef = useRef<number | null>(null)
+  const diveStartedAtRef = useRef<number | null>(null)
   const [renderOpacity, setRenderOpacity] = useState(1)
   const [rippleBurst, setRippleBurst] = useState(0)
   const hasAnnouncedLanding = useRef(false)
@@ -43,6 +44,10 @@ function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spaw
   useEffect(() => {
     if (landingState !== 'falling') {
       hasAnnouncedLanding.current = true
+    }
+    if (landingState !== 'diving') {
+      diveStartedAtRef.current = null
+      diveRippleSent.current = false
     }
   }, [landingState])
 
@@ -96,18 +101,22 @@ function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spaw
         speedValue = 0.24 + kick * 0.18
         turnRateValue = flop * 0.36
       } else {
-        const diveT = Math.min((elapsed % 10) / 0.9, 1)
-        x = THREE.MathUtils.lerp(0, 1.04, diveT) - Math.sin(diveT * Math.PI) * 0.08
-        y = THREE.MathUtils.lerp(-0.48, -1.14, diveT * diveT) - Math.sin(diveT * Math.PI) * 0.1
-        z = THREE.MathUtils.lerp(0, -0.24, diveT)
-        rotationZ = THREE.MathUtils.lerp(-0.08, -0.9, diveT)
-        tailAngle = Math.sin(elapsed * 25) * (0.46 - diveT * 0.1)
-        finAngle = Math.sin(elapsed * 15) * 0.5
-        bodyBend = 0.12 + Math.sin(diveT * Math.PI) * 0.08
-        speedValue = 0.46
-        turnRateValue = -0.22
+        if (diveStartedAtRef.current === null) {
+          diveStartedAtRef.current = elapsed
+        }
+        const diveT = THREE.MathUtils.clamp((elapsed - diveStartedAtRef.current) / 1.22, 0, 1)
+        const jump = Math.sin(diveT * Math.PI) * 0.96
+        x = THREE.MathUtils.lerp(-0.18, 1.08, diveT) - Math.sin(diveT * Math.PI) * 0.12
+        y = -0.64 + jump - diveT * diveT * 0.72
+        z = THREE.MathUtils.lerp(0.02, -0.28, diveT)
+        rotationZ = THREE.MathUtils.lerp(-0.18, -1.18, diveT) + Math.sin(diveT * Math.PI) * 0.32
+        tailAngle = Math.sin(elapsed * 28) * (0.54 - diveT * 0.14)
+        finAngle = Math.sin(elapsed * 17) * 0.58
+        bodyBend = 0.14 + Math.sin(diveT * Math.PI) * 0.14
+        speedValue = 0.52 + Math.sin(diveT * Math.PI) * 0.18
+        turnRateValue = -0.3
 
-        if (diveT > 0.4 && !diveRippleSent.current) {
+        if (diveT > 0.74 && !diveRippleSent.current) {
           diveRippleSent.current = true
           setRippleBurst((current) => current + 1)
         }
@@ -185,9 +194,9 @@ export function SceneCanvas({ emoji, mode, landingState, onLandingReady, fishEnt
       camera={{ position: [0, 0, 4.6], fov: 38 }}
       gl={{ alpha: true, antialias: true }}
     >
-      <ambientLight intensity={2.1} />
-      <directionalLight position={[2.6, 4, 3.2]} intensity={1.6} />
-      <hemisphereLight args={['#fff7c8', '#e8ad19', 0.8]} />
+      <ambientLight intensity={1.55} />
+      <directionalLight position={[2.6, 4, 3.2]} intensity={0.72} />
+      <hemisphereLight args={['#fff7c8', '#e8ad19', 0.48]} />
 
       {mode === 'landing' ? (
         <>

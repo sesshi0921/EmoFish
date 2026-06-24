@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { InputScreen } from './screens/InputScreen'
 import { LandingScreen } from './screens/LandingScreen'
 import { SwimScreen } from './screens/SwimScreen'
@@ -62,7 +62,7 @@ function App() {
 
     diveTimerRef.current = window.setTimeout(() => {
       setPhase('swim')
-    }, 900)
+    }, 1300)
 
     return () => {
       if (diveTimerRef.current !== null) {
@@ -70,11 +70,6 @@ function App() {
       }
     }
   }, [landingState, phase])
-
-  const canDive = useMemo(
-    () => phase === 'landing' && (landingState === 'flopping' || landingState === 'diving'),
-    [landingState, phase],
-  )
 
   const handleLaunch = (nextEmoji: string) => {
     setEmoji(nextEmoji)
@@ -86,7 +81,7 @@ function App() {
   }
 
   const handleDive = () => {
-    if (canDive) {
+    if (phase === 'landing' && landingState !== 'diving') {
       setLandingState('diving')
     }
   }
