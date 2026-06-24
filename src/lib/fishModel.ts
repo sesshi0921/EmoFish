@@ -56,7 +56,7 @@ export function createFishBodyGeometry() {
       const z = Math.sin(angle) * halfDepth
 
       positions.push(x, y, z)
-      if (normalizedX >= 0.64) {
+      if (normalizedX >= 0.5) {
         const faceU = 0.805 + (z / 0.3) * 0.19
         const faceV = 0.5 - (y / 0.4) * 0.42
         uvs.push(
