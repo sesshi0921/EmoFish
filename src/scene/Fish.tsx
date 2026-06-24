@@ -112,8 +112,8 @@ export function Fish({ emoji, motionRef }: FishProps) {
     }
 
     if (tailRef.current) {
-      tailRef.current.rotation.z = tail * 0.72 + bend * 0.24
-      tailRef.current.position.y = tail * 0.12 + bend * 0.08
+      tailRef.current.rotation.y = tail * 0.82 + bend * 0.26
+      tailRef.current.position.z = tail * 0.13 + bend * 0.08
     }
 
     if (topFinRef.current) {
@@ -163,7 +163,7 @@ export function Fish({ emoji, motionRef }: FishProps) {
         ref={faceRef}
         geometry={faceGeometry}
         material={faceMaterial}
-        position={[0.515, 0.005, 0]}
+        position={[0.51, 0, 0]}
       />
 
       <mesh

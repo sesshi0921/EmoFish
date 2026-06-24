@@ -102,8 +102,8 @@ export function createHeadFaceGeometry() {
   const positions: number[] = []
   const uvs: number[] = []
   const indices: number[] = []
-  const halfWidth = 0.34
-  const halfHeight = 0.33
+  const halfWidth = 0.38
+  const halfHeight = 0.37
   const capDepth = 0.15
 
   for (let row = 0; row <= rows; row += 1) {
@@ -113,9 +113,9 @@ export function createHeadFaceGeometry() {
     for (let column = 0; column <= columns; column += 1) {
       const u = column / columns
       const zT = u * 2 - 1
-      const radius = Math.min(1, zT * zT * 0.72 + yT * yT * 0.88)
+      const radius = Math.min(1, zT * zT * 0.8 + yT * yT * 0.84)
       const cap = Math.sqrt(Math.max(0, 1 - radius))
-      const edgeTaper = 1 - Math.pow(radius, 1.2) * 0.1
+      const edgeTaper = 1 - Math.pow(radius, 1.2) * 0.06
 
       positions.push(cap * capDepth, yT * halfHeight * edgeTaper, zT * halfWidth * edgeTaper)
       uvs.push(u, v)
@@ -197,8 +197,8 @@ function deformFishGeometry(
     positions.setXYZ(
       index,
       baseX,
-      baseY + bendOffset + tailOffset + turnLift,
-      baseZ * (1 - speedCompression) + tailInfluence * 0.02,
+      baseY,
+      baseZ * (1 - speedCompression) + bendOffset + tailOffset + turnLift,
     )
   }
 
