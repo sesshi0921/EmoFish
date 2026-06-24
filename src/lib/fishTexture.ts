@@ -35,76 +35,9 @@ function colorToCss(color: THREE.Color) {
   return `#${toHex(color.r * 255)}${toHex(color.g * 255)}${toHex(color.b * 255)}`
 }
 
-function getDominantEmojiColor(canvas: HTMLCanvasElement) {
-  const ctx = canvas.getContext('2d')
-  if (!ctx) {
-    return new THREE.Color('#f8c62f')
-  }
-
-  const image = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const bins = new Map<string, { count: number; r: number; g: number; b: number }>()
-  const centerX = canvas.width * 0.5
-  const centerY = canvas.height * 0.53
-  const maxRadius = canvas.width * 0.5
-
-  for (let index = 0; index < image.data.length; index += 16) {
-    const alpha = image.data[index + 3]
-    if (alpha < 48) {
-      continue
-    }
-
-    const pixelIndex = index / 4
-    const x = pixelIndex % canvas.width
-    const y = Math.floor(pixelIndex / canvas.width)
-    const radius = Math.hypot((x - centerX) / maxRadius, (y - centerY) / maxRadius)
-    if (radius < 0.38 || radius > 0.78) {
-      continue
-    }
-
-    const red = image.data[index]
-    const green = image.data[index + 1]
-    const blue = image.data[index + 2]
-    const max = Math.max(red, green, blue)
-    const min = Math.min(red, green, blue)
-    const lightness = (max + min) / 2
-    const saturation = max === 0 ? 0 : (max - min) / max
-
-    if (lightness > 232 || lightness < 32 || saturation < 0.12) {
-      continue
-    }
-
-    const key = `${Math.round(red / 24)}-${Math.round(green / 24)}-${Math.round(blue / 24)}`
-    const bin = bins.get(key) ?? { count: 0, r: 0, g: 0, b: 0 }
-    bin.count += alpha / 255
-    bin.r += red * alpha
-    bin.g += green * alpha
-    bin.b += blue * alpha
-    bins.set(key, bin)
-  }
-
-  let best: { count: number; r: number; g: number; b: number } | null = null
-  for (const bin of bins.values()) {
-    if (!best || bin.count > best.count) {
-      best = bin
-    }
-  }
-
-  if (!best) {
-    return new THREE.Color('#f8c62f')
-  }
-
-  const color = new THREE.Color(best.r / best.count / 255, best.g / best.count / 255, best.b / best.count / 255)
-  const hsl = { h: 0, s: 0, l: 0 }
-  color.getHSL(hsl)
-  hsl.s = THREE.MathUtils.clamp(hsl.s * 1.08, 0.48, 0.88)
-  hsl.l = THREE.MathUtils.clamp(hsl.l, 0.48, 0.68)
-  color.setHSL(hsl.h, hsl.s, hsl.l)
-  return color
-}
-
 export function createFishBodyTexture(emoji = '') {
   const rawEmoji = emoji ? createRawEmojiCanvas(emoji) : null
-  const baseColor = rawEmoji ? getDominantEmojiColor(rawEmoji) : new THREE.Color('#f8c62f')
+  const baseColor = new THREE.Color('#f8c62f')
   const hsl = { h: 0, s: 0, l: 0 }
   baseColor.getHSL(hsl)
   const lightColor = new THREE.Color().setHSL(hsl.h, Math.max(0.28, hsl.s * 0.82), Math.min(0.82, hsl.l + 0.18))

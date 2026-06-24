@@ -11,7 +11,7 @@ type AppPhase = 'input' | 'landing' | 'swim'
 function App() {
   const params = new URLSearchParams(window.location.search)
 
-  if (window.location.pathname.endsWith('/debug') || params.get('debug') === '1') {
+  if (window.location.pathname.endsWith('/debug') || params.get('debug') === '1' || window.location.hash === '#debug') {
     return <DebugScreen />
   }
 
