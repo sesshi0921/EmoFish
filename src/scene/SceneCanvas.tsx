@@ -19,6 +19,10 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
   const groupRef = useRef<THREE.Group>(null)
   const motionRef = useRef({ tailAngle: 0, finAngle: 0, bodyBend: 0, speed: 0, turnRate: 0 })
   const swimState = useMemo(() => createSwimState(Math.random() * Math.PI), [])
+  const forwardRef = useRef(new THREE.Vector3(1, 0, 0))
+  const directionRef = useRef(new THREE.Vector3(1, 0, 0))
+  const orientationRef = useRef(new THREE.Quaternion())
+  const targetOrientationRef = useRef(new THREE.Quaternion())
   const [rippleBurst, setRippleBurst] = useState(0)
   const hasAnnouncedLanding = useRef(false)
   const diveRippleSent = useRef(false)
@@ -44,6 +48,7 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
     let speedValue = 0
     let turnRateValue = 0
     let rotationZ = 0
+    let swimDirection: THREE.Vector3 | null = null
 
     if (mode === 'landing') {
       if (landingState === 'falling') {
@@ -94,9 +99,10 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
       z = swimState.position.z
 
       const speed = swimState.velocity.length()
-      const heading = swimState.heading
       const turn = THREE.MathUtils.clamp(swimState.turnRate * 0.34, -1, 1)
-      rotationZ = heading
+      swimDirection = directionRef.current
+        .set(swimState.velocity.x, swimState.velocity.y, swimState.velocity.z * 1.4)
+        .normalize()
       tailAngle =
         Math.sin(elapsed * (5.2 + speed * 16)) * (0.16 + speed * 0.54 + Math.abs(turn) * 0.22) -
         turn * 0.34
@@ -107,7 +113,14 @@ function FishActor({ emoji, mode, landingState = 'falling', onLandingReady }: Fi
     }
 
     groupRef.current.position.set(x, y, z)
-    groupRef.current.rotation.set(0, 0, rotationZ)
+    if (swimDirection) {
+      targetOrientationRef.current.setFromUnitVectors(forwardRef.current, swimDirection)
+      orientationRef.current.slerp(targetOrientationRef.current, Math.min(delta * 3.2, 0.18))
+      groupRef.current.quaternion.copy(orientationRef.current)
+    } else {
+      groupRef.current.rotation.set(0, 0, rotationZ)
+      orientationRef.current.copy(groupRef.current.quaternion)
+    }
     groupRef.current.scale.set(1, 1, 1)
     motionRef.current.tailAngle = tailAngle
     motionRef.current.finAngle = finAngle

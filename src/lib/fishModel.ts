@@ -96,6 +96,52 @@ export function createFinGeometry(width: number, height: number) {
   return geometry
 }
 
+export function createHeadFaceGeometry() {
+  const columns = 34
+  const rows = 30
+  const positions: number[] = []
+  const uvs: number[] = []
+  const indices: number[] = []
+  const halfWidth = 0.34
+  const halfHeight = 0.33
+  const capDepth = 0.15
+
+  for (let row = 0; row <= rows; row += 1) {
+    const v = row / rows
+    const yT = 1 - v * 2
+
+    for (let column = 0; column <= columns; column += 1) {
+      const u = column / columns
+      const zT = u * 2 - 1
+      const radius = Math.min(1, zT * zT * 0.72 + yT * yT * 0.88)
+      const cap = Math.sqrt(Math.max(0, 1 - radius))
+      const edgeTaper = 1 - Math.pow(radius, 1.2) * 0.1
+
+      positions.push(cap * capDepth, yT * halfHeight * edgeTaper, zT * halfWidth * edgeTaper)
+      uvs.push(u, v)
+    }
+  }
+
+  const rowSize = columns + 1
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const a = row * rowSize + column
+      const b = a + 1
+      const c = a + rowSize
+      const d = c + 1
+      indices.push(a, c, b, b, c, d)
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry() as FishGeometry
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
+  geometry.setIndex(indices)
+  geometry.computeVertexNormals()
+  geometry.userData.basePositions = new Float32Array(positions)
+  return geometry
+}
+
 export function deformFishBody(
   geometry: FishGeometry,
   motion: {
@@ -106,6 +152,18 @@ export function deformFishBody(
   },
 ) {
   deformFishGeometry(geometry, motion, 1)
+}
+
+export function deformFishFace(
+  geometry: FishGeometry,
+  motion: {
+    tailAngle: number
+    bodyBend: number
+    speed: number
+    turnRate: number
+  },
+) {
+  deformFishGeometry(geometry, motion, 0.08)
 }
 
 function deformFishGeometry(

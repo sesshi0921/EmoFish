@@ -40,7 +40,7 @@ export function updateSwimState(state: SwimState, elapsed: number, delta: number
     state.target.set(
       Math.cos(phase) * 0.96 + Math.sin(phase * 1.8) * 0.22,
       THREE.MathUtils.clamp(Math.sin(phase * 1.2) * 0.42, -0.46, 0.58),
-      Math.sin(phase * 0.9) * 0.22,
+      Math.sin(phase * 0.9) * 0.5,
     )
     state.nextTargetAt = elapsed + 1.8 + Math.abs(Math.sin(elapsed * 0.7 + state.seed)) * 1.1
   }
@@ -61,9 +61,11 @@ export function updateSwimState(state: SwimState, elapsed: number, delta: number
     Math.max(0, Math.sin(elapsed * 1.7 + state.seed)) * 0.05
   state.speed = THREE.MathUtils.lerp(state.speed, desiredSpeed, Math.min(delta * 1.4, 1))
 
+  const previousZ = state.position.z
   state.velocity.set(Math.cos(state.heading), Math.sin(state.heading), 0).multiplyScalar(state.speed)
   state.position.addScaledVector(state.velocity, delta)
-  state.position.z = THREE.MathUtils.lerp(state.position.z, state.target.z, Math.min(delta * 0.9, 1))
+  state.position.z = THREE.MathUtils.lerp(state.position.z, state.target.z, Math.min(delta * 0.72, 1))
+  state.velocity.z = (state.position.z - previousZ) / Math.max(delta, 0.001)
 
   if (state.position.x > 1.36 || state.position.x < -1.36) {
     state.target.x = state.position.x > 0 ? -0.82 : 0.82
@@ -78,5 +80,5 @@ export function updateSwimState(state: SwimState, elapsed: number, delta: number
 
   state.position.x = THREE.MathUtils.clamp(state.position.x, -1.4, 1.4)
   state.position.y = THREE.MathUtils.clamp(state.position.y, -0.66, 0.78)
-  state.position.z = THREE.MathUtils.clamp(state.position.z, -0.28, 0.3)
+  state.position.z = THREE.MathUtils.clamp(state.position.z, -0.5, 0.52)
 }
