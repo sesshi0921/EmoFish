@@ -56,12 +56,13 @@ export function createFishBodyGeometry() {
       const z = Math.sin(angle) * halfDepth
 
       positions.push(x, y, z)
-      if (normalizedX >= 0.5) {
-        const faceU = 0.805 + (z / 0.3) * 0.19
-        const faceV = 0.5 - (y / 0.4) * 0.42
+      if (normalizedX >= 0.65) {
+        const faceT = (normalizedX - 0.65) / 0.35
+        const faceU = 0.805 + (z / Math.max(halfDepth, 0.001)) * 0.17 + (faceT - 0.5) * 0.035
+        const faceV = 0.5 - (y / Math.max(halfHeight, 0.001)) * 0.38
         uvs.push(
-          THREE.MathUtils.clamp(faceU, 0.585, 1),
-          THREE.MathUtils.clamp(faceV, 0.06, 0.94),
+          THREE.MathUtils.clamp(faceU, 0.59, 0.99),
+          THREE.MathUtils.clamp(faceV, 0.08, 0.92),
         )
       } else {
         uvs.push(xT, radialIndex / radialSegments)
