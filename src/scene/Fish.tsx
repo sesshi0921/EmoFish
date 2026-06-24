@@ -163,7 +163,7 @@ export function Fish({ emoji, motionRef }: FishProps) {
         ref={faceRef}
         geometry={faceGeometry}
         material={faceMaterial}
-        position={[0.51, 0, 0]}
+        position={[0.49, 0, 0]}
       />
 
       <mesh
