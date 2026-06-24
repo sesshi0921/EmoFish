@@ -13,11 +13,12 @@ function getHalfHeight(normalizedX: number) {
   if (normalizedX < 0.42) {
     return THREE.MathUtils.lerp(0.24, 0.39, (normalizedX - 0.14) / 0.28)
   }
-  if (normalizedX < 0.7) {
-    return THREE.MathUtils.lerp(0.39, 0.38, (normalizedX - 0.42) / 0.28)
+  if (normalizedX < 0.76) {
+    return THREE.MathUtils.lerp(0.39, 0.37, (normalizedX - 0.42) / 0.34)
   }
-  const capT = (normalizedX - 0.7) / 0.3
-  return Math.max(0.026, Math.cos(capT * Math.PI * 0.5) * 0.38)
+  const capT = (normalizedX - 0.76) / 0.24
+  const roundedFace = 0.37 * (0.2 + Math.cos(capT * Math.PI * 0.5) * 0.8)
+  return Math.max(0.058, roundedFace)
 }
 
 function getHalfDepth(normalizedX: number) {
@@ -27,11 +28,12 @@ function getHalfDepth(normalizedX: number) {
   if (normalizedX < 0.46) {
     return THREE.MathUtils.lerp(0.15, 0.29, (normalizedX - 0.14) / 0.32)
   }
-  if (normalizedX < 0.7) {
-    return THREE.MathUtils.lerp(0.29, 0.28, (normalizedX - 0.46) / 0.24)
+  if (normalizedX < 0.76) {
+    return THREE.MathUtils.lerp(0.29, 0.27, (normalizedX - 0.46) / 0.3)
   }
-  const capT = (normalizedX - 0.7) / 0.3
-  return Math.max(0.022, Math.cos(capT * Math.PI * 0.5) * 0.28)
+  const capT = (normalizedX - 0.76) / 0.24
+  const roundedFace = 0.27 * (0.22 + Math.cos(capT * Math.PI * 0.5) * 0.78)
+  return Math.max(0.052, roundedFace)
 }
 
 export function createFishBodyGeometry() {
@@ -58,17 +60,26 @@ export function createFishBodyGeometry() {
       positions.push(x, y, z)
       if (normalizedX >= 0.65) {
         const faceT = (normalizedX - 0.65) / 0.35
-        const faceU = 0.805 + (z / Math.max(halfDepth, 0.001)) * 0.17 + (faceT - 0.5) * 0.035
-        const faceV = 0.5 - (y / Math.max(halfHeight, 0.001)) * 0.38
+        const edgeEase = THREE.MathUtils.smoothstep(faceT, 0, 1)
+        const faceU = 0.79 + (z / 0.29) * 0.255 + (edgeEase - 0.5) * 0.018
+        const faceV = 0.5 + (y / 0.39) * 0.455
         uvs.push(
-          THREE.MathUtils.clamp(faceU, 0.59, 0.99),
-          THREE.MathUtils.clamp(faceV, 0.08, 0.92),
+          THREE.MathUtils.clamp(faceU, 0.5, 0.998),
+          THREE.MathUtils.clamp(faceV, 0.035, 0.965),
         )
       } else {
         uvs.push(xT, radialIndex / radialSegments)
       }
     }
   }
+
+  const tailCapIndex = positions.length / 3
+  positions.push(tailX, 0, 0)
+  uvs.push(0, 0.5)
+
+  const noseCapIndex = positions.length / 3
+  positions.push(noseX, 0, 0)
+  uvs.push(0.79, 0.5)
 
   const ringSize = radialSegments + 1
   for (let xIndex = 0; xIndex < lengthSegments; xIndex += 1) {
@@ -79,6 +90,18 @@ export function createFishBodyGeometry() {
       const d = b + 1
       indices.push(a, b, c, c, b, d)
     }
+  }
+
+  const tailRingStart = 0
+  const noseRingStart = lengthSegments * ringSize
+  for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
+    const tailA = tailRingStart + radialIndex
+    const tailB = tailRingStart + radialIndex + 1
+    indices.push(tailCapIndex, tailA, tailB)
+
+    const noseA = noseRingStart + radialIndex
+    const noseB = noseRingStart + radialIndex + 1
+    indices.push(noseCapIndex, noseA, noseB)
   }
 
   const geometry = new THREE.BufferGeometry() as FishGeometry

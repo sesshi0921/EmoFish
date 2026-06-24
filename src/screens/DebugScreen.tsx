@@ -22,10 +22,16 @@ function DebugFish({ emoji, yaw, pitch, roll }: { emoji: string; yaw: number; pi
 }
 
 export function DebugScreen() {
-  const [emoji, setEmoji] = useState('🫪')
-  const [yaw, setYaw] = useState(-90)
-  const [pitch, setPitch] = useState(0)
-  const [roll, setRoll] = useState(0)
+  const params = new URLSearchParams(window.location.search)
+  const initialYaw = Number(params.get('yaw') ?? -90)
+  const initialPitch = Number(params.get('pitch') ?? 0)
+  const initialRoll = Number(params.get('roll') ?? 0)
+  const initialEmoji = params.get('emoji') ?? '🫪'
+
+  const [emoji, setEmoji] = useState(initialEmoji)
+  const [yaw, setYaw] = useState(Number.isFinite(initialYaw) ? initialYaw : -90)
+  const [pitch, setPitch] = useState(Number.isFinite(initialPitch) ? initialPitch : 0)
+  const [roll, setRoll] = useState(Number.isFinite(initialRoll) ? initialRoll : 0)
 
   return (
     <main className="debug-screen">

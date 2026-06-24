@@ -75,25 +75,25 @@ function drawFacePatch(ctx: CanvasRenderingContext2D, source: HTMLCanvasElement,
 
   const centerX = 824
   const centerY = 256
-  const width = 430
-  const height = 472
+  const width = 500
+  const height = 494
 
   ctx.save()
   ctx.beginPath()
-  ctx.ellipse(centerX, centerY, width * 0.52, height * 0.52, 0, 0, Math.PI * 2)
+  ctx.ellipse(centerX, centerY, width * 0.55, height * 0.54, 0, 0, Math.PI * 2)
   ctx.clip()
 
   ctx.filter = 'blur(18px)'
-  ctx.globalAlpha = 0.32
-  ctx.drawImage(source, centerX - width * 0.66, centerY - height * 0.62, width * 1.32, height * 1.24)
+  ctx.globalAlpha = 0.36
+  ctx.drawImage(source, centerX - width * 0.61, centerY - height * 0.59, width * 1.22, height * 1.18)
 
   ctx.filter = 'blur(5px)'
-  ctx.globalAlpha = 0.42
-  ctx.drawImage(source, centerX - width * 0.61, centerY - height * 0.57, width * 1.22, height * 1.14)
+  ctx.globalAlpha = 0.48
+  ctx.drawImage(source, centerX - width * 0.57, centerY - height * 0.55, width * 1.14, height * 1.1)
 
   ctx.filter = 'none'
   ctx.globalAlpha = 0.92
-  ctx.drawImage(source, centerX - width * 0.56, centerY - height * 0.52, width * 1.12, height * 1.04)
+  ctx.drawImage(source, centerX - width * 0.52, centerY - height * 0.51, width * 1.04, height * 1.02)
   ctx.restore()
 
   ctx.save()
@@ -101,12 +101,12 @@ function drawFacePatch(ctx: CanvasRenderingContext2D, source: HTMLCanvasElement,
   const hsl = { h: 0, s: 0, l: 0 }
   baseColor.getHSL(hsl)
   const blendColor = colorToCss(new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l))
-  const blend = ctx.createRadialGradient(centerX, centerY, 116, centerX, centerY, 254)
+  const blend = ctx.createRadialGradient(centerX, centerY, 128, centerX, centerY, 292)
   blend.addColorStop(0, `${blendColor}00`)
-  blend.addColorStop(0.72, `${blendColor}1a`)
-  blend.addColorStop(1, `${blendColor}7a`)
+  blend.addColorStop(0.66, `${blendColor}14`)
+  blend.addColorStop(1, `${blendColor}8a`)
   ctx.fillStyle = blend
-  ctx.fillRect(centerX - width * 0.58, centerY - height * 0.56, width * 1.16, height * 1.12)
+  ctx.fillRect(centerX - width * 0.6, centerY - height * 0.58, width * 1.2, height * 1.16)
   ctx.restore()
 }
 
