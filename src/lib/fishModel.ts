@@ -97,14 +97,13 @@ export function createFinGeometry(width: number, height: number) {
 }
 
 export function createHeadFaceGeometry() {
-  const columns = 34
-  const rows = 30
+  const columns = 36
+  const rows = 32
   const positions: number[] = []
   const uvs: number[] = []
   const indices: number[] = []
-  const halfWidth = 0.38
-  const halfHeight = 0.37
-  const capDepth = 0.15
+  const noseX = 0.66
+  const tailX = -0.58
 
   for (let row = 0; row <= rows; row += 1) {
     const v = row / rows
@@ -113,11 +112,14 @@ export function createHeadFaceGeometry() {
     for (let column = 0; column <= columns; column += 1) {
       const u = column / columns
       const zT = u * 2 - 1
-      const radius = Math.min(1, zT * zT * 0.8 + yT * yT * 0.84)
-      const cap = Math.sqrt(Math.max(0, 1 - radius))
-      const edgeTaper = 1 - Math.pow(radius, 1.2) * 0.06
+      const radius = Math.min(1, Math.sqrt(zT * zT * 0.72 + yT * yT * 0.86))
+      const normalizedX = THREE.MathUtils.lerp(1, 0.78, Math.pow(radius, 1.12))
+      const edgeTaper = 1 - Math.pow(radius, 1.4) * 0.04
+      const x = THREE.MathUtils.lerp(tailX, noseX, normalizedX)
+      const halfHeight = getHalfHeight(normalizedX)
+      const halfDepth = getHalfDepth(normalizedX)
 
-      positions.push(cap * capDepth, yT * halfHeight * edgeTaper, zT * halfWidth * edgeTaper)
+      positions.push(x, yT * halfHeight * edgeTaper, zT * halfDepth * edgeTaper)
       uvs.push(u, v)
     }
   }

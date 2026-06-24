@@ -163,7 +163,6 @@ export function Fish({ emoji, motionRef }: FishProps) {
         ref={faceRef}
         geometry={faceGeometry}
         material={faceMaterial}
-        position={[0.49, 0, 0]}
       />
 
       <mesh
@@ -189,7 +188,7 @@ export function Fish({ emoji, motionRef }: FishProps) {
         material={finMaterial}
         position={[0.12, -0.13, 0.2]}
         rotation={[0.12, -0.42, 0.34]}
-        scale={[0.72, 0.56, 1]}
+        scale={[0.8, 0.62, 1]}
       />
     </group>
   )
