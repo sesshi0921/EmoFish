@@ -59,8 +59,10 @@ export function createFishBodyGeometry() {
 
       positions.push(x, y, z)
       if (normalizedX >= 0.65) {
-        const faceU = 0.79 + (z / 0.37) * 0.255
-        const faceV = 0.5 + (y / 0.37) * 0.455
+        const faceT = (normalizedX - 0.65) / 0.35
+        const capScale = THREE.MathUtils.lerp(1.06, 0.12, THREE.MathUtils.smoothstep(faceT, 0, 1))
+        const faceU = 0.79 + (z / 0.37) * 0.238 * capScale
+        const faceV = 0.5 + (y / 0.37) * 0.44 * capScale
         uvs.push(
           THREE.MathUtils.clamp(faceU, 0.515, 0.995),
           THREE.MathUtils.clamp(faceV, 0.035, 0.965),
