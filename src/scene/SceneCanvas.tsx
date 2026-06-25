@@ -164,7 +164,7 @@ function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spaw
       motionEnergy = speed * 0.72 + Math.abs(turn) * 0.98 + Math.abs(bodyBend) * 0.18
     }
 
-    if (motionEnergy > 0.58 && elapsed - lastArcAtRef.current > 0.18) {
+    if (motionEnergy > 0.9 && elapsed - lastArcAtRef.current > 0.62) {
       lastArcAtRef.current = elapsed
       setArcBurst((current) => current + 1)
     }

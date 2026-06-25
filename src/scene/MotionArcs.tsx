@@ -30,7 +30,7 @@ export function MotionArcs({ burst, energy }: MotionArcsProps) {
 
     if (burst > lastBurstRef.current) {
       lastBurstRef.current = burst
-      const baseScale = 0.34 + Math.min(0.2, energy * 0.15)
+      const baseScale = 0.24 + Math.min(0.12, energy * 0.08)
       items.push(
         {
           id: burst * 10 + 1,
@@ -43,28 +43,6 @@ export function MotionArcs({ burst, energy }: MotionArcsProps) {
           rotationZ: -0.3,
           scale: baseScale,
         },
-        {
-          id: burst * 10 + 2,
-          age: 0.08,
-          offsetX: -0.08,
-          offsetY: -0.03,
-          offsetZ: -0.12,
-          rotationX: -0.18,
-          rotationY: 0.24,
-          rotationZ: 0.42,
-          scale: baseScale * 0.92,
-        },
-        {
-          id: burst * 10 + 3,
-          age: 0.14,
-          offsetX: 0.02,
-          offsetY: -0.09,
-          offsetZ: 0.05,
-          rotationX: 0.52,
-          rotationY: -0.08,
-          rotationZ: 0.14,
-          scale: baseScale * 1.12,
-        },
       )
     }
 
@@ -72,7 +50,7 @@ export function MotionArcs({ burst, energy }: MotionArcsProps) {
       arc.age += delta
     }
 
-    arcsRef.current = items.filter((arc) => arc.age < 0.75)
+    arcsRef.current = items.filter((arc) => arc.age < 0.42)
 
     if (!groupRef.current) {
       return
@@ -87,10 +65,10 @@ export function MotionArcs({ burst, energy }: MotionArcsProps) {
 
       child.position.set(arc.offsetX, arc.offsetY, arc.offsetZ)
       child.rotation.set(arc.rotationX, arc.rotationY, arc.rotationZ + arc.age * 1.8)
-      child.scale.setScalar(arc.scale * (1 + arc.age * 0.48))
+      child.scale.setScalar(arc.scale * (1 + arc.age * 0.28))
       const material = (child.children[0] as Mesh | undefined)?.material
       if (material && !Array.isArray(material)) {
-        ;(material as Material & { opacity: number }).opacity = Math.max(0, 0.44 - arc.age * 0.56)
+        ;(material as Material & { opacity: number }).opacity = Math.max(0, 0.18 - arc.age * 0.42)
       }
     })
   })
@@ -100,8 +78,8 @@ export function MotionArcs({ burst, energy }: MotionArcsProps) {
       {meshes.map((_, index) => (
         <group key={index} visible={false}>
           <mesh>
-            <torusGeometry args={[0.36, 0.028, 10, 28, 1.3]} />
-            <meshBasicMaterial color="#ffd84a" transparent opacity={0.32} depthWrite={false} blending={AdditiveBlending} />
+            <torusGeometry args={[0.36, 0.016, 8, 24, 1.04]} />
+            <meshBasicMaterial color="#ffd84a" transparent opacity={0.16} depthWrite={false} blending={AdditiveBlending} />
           </mesh>
         </group>
       ))}
