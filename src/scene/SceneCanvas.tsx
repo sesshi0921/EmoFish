@@ -2,6 +2,8 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Fish, type FishMotionRef } from './Fish'
+import { FluidMist } from './FluidMist'
+import { MotionArcs } from './MotionArcs'
 import { Particles } from './Particles'
 import { Ripples } from './Ripples'
 import { createSwimState, updateSwimState } from '../lib/fishMotion'
@@ -38,8 +40,11 @@ function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spaw
   const diveStartedAtRef = useRef<number | null>(null)
   const [renderOpacity, setRenderOpacity] = useState(1)
   const [rippleBurst, setRippleBurst] = useState(0)
+  const [arcBurst, setArcBurst] = useState(0)
   const hasAnnouncedLanding = useRef(false)
   const diveRippleSent = useRef(false)
+  const lastArcAtRef = useRef(0)
+  const motionEnergyRef = useRef(0)
 
   useEffect(() => {
     if (landingState !== 'falling') {
@@ -71,6 +76,7 @@ function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spaw
     let bodyBend = 0
     let speedValue = 0
     let turnRateValue = 0
+    let motionEnergy = 0
     let rotationZ = 0
     let swimDirection: THREE.Vector3 | null = null
     let fadeOpacity = 1
@@ -100,6 +106,7 @@ function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spaw
         bodyBend = flop * 0.42 + kick * 0.16
         speedValue = 0.24 + kick * 0.18
         turnRateValue = flop * 0.36
+        motionEnergy = Math.abs(flop) * 0.48 + kick * 0.42
       } else {
         if (diveStartedAtRef.current === null) {
           diveStartedAtRef.current = elapsed
@@ -115,6 +122,7 @@ function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spaw
         bodyBend = 0.14 + Math.sin(diveT * Math.PI) * 0.14
         speedValue = 0.52 + Math.sin(diveT * Math.PI) * 0.18
         turnRateValue = -0.3
+        motionEnergy = Math.abs(Math.sin(diveT * Math.PI)) * 0.7 + 0.32
 
         if (diveT > 0.74 && !diveRippleSent.current) {
           diveRippleSent.current = true
@@ -153,7 +161,14 @@ function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spaw
       bodyBend = -turn * 0.58 + Math.sin(elapsed * (2 + speed * 1.6)) * 0.025
       speedValue = speed
       turnRateValue = swimState.turnRate
+      motionEnergy = speed * 0.72 + Math.abs(turn) * 0.98 + Math.abs(bodyBend) * 0.18
     }
+
+    if (motionEnergy > 0.58 && elapsed - lastArcAtRef.current > 0.18) {
+      lastArcAtRef.current = elapsed
+      setArcBurst((current) => current + 1)
+    }
+    motionEnergyRef.current = motionEnergy
 
     groupRef.current.position.set(x, y, z)
     if (swimDirection) {
@@ -177,6 +192,7 @@ function FishActor({ entry, mode, landingState = 'falling', onLandingReady, spaw
     <>
       <group ref={groupRef}>
         <Fish emoji={entry.emoji} motionRef={motionRef as FishMotionRef} opacity={renderOpacity} />
+        <MotionArcs burst={arcBurst} energy={motionEnergyRef.current} />
       </group>
       <Ripples mode={mode} burst={rippleBurst} />
     </>
@@ -211,6 +227,7 @@ export function SceneCanvas({ emoji, mode, landingState, onLandingReady, fishEnt
         </>
       ) : (
         <>
+          <FluidMist mode={mode} />
           <mesh position={[0, -1.7, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <planeGeometry args={[8, 6]} />
             <meshStandardMaterial color="#f1b61e" roughness={1} />
