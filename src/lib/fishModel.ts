@@ -78,6 +78,7 @@ export function createFishBodyGeometry() {
   uvs.push(0, 0.5)
 
   const ringSize = radialSegments + 1
+  const noseRingStart = lengthSegments * ringSize
   for (let xIndex = 0; xIndex < lengthSegments; xIndex += 1) {
     for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
       const a = xIndex * ringSize + radialIndex
@@ -93,6 +94,15 @@ export function createFishBodyGeometry() {
     const tailA = tailRingStart + radialIndex
     const tailB = tailRingStart + radialIndex + 1
     indices.push(tailCapIndex, tailA, tailB)
+  }
+
+  for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
+    const noseA = noseRingStart + radialIndex
+    const noseB = noseRingStart + radialIndex + 1
+    const tipIndex = positions.length / 3
+    positions.push(noseX + 0.045, 0, 0)
+    uvs.push(0.42, radialIndex / radialSegments)
+    indices.push(noseA, tipIndex, noseB)
   }
 
   const geometry = new THREE.BufferGeometry() as FishGeometry
