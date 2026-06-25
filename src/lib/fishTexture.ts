@@ -166,9 +166,12 @@ function paintifyEmoji(canvas: HTMLCanvasElement) {
     }
 
     const tone = lightness / 255
-    pixels[index] = 230 + Math.round(tone * 24)
-    pixels[index + 1] = 166 + Math.round(tone * 44)
-    pixels[index + 2] = 22 + Math.round(tone * 28)
+    const targetRed = 248 + Math.round((tone - 0.5) * 12)
+    const targetGreen = 198 + Math.round((tone - 0.5) * 18)
+    const targetBlue = 47 + Math.round((tone - 0.5) * 10)
+    pixels[index] = Math.round(red * 0.12 + targetRed * 0.88)
+    pixels[index + 1] = Math.round(green * 0.12 + targetGreen * 0.88)
+    pixels[index + 2] = Math.round(blue * 0.12 + targetBlue * 0.88)
   }
 
   ctx.putImageData(image, 0, 0)

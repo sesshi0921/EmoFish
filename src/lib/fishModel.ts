@@ -13,10 +13,10 @@ function getHalfHeight(normalizedX: number) {
   if (normalizedX < 0.42) {
     return THREE.MathUtils.lerp(0.24, 0.39, (normalizedX - 0.14) / 0.28)
   }
-  if (normalizedX < 0.76) {
-    return THREE.MathUtils.lerp(0.39, 0.37, (normalizedX - 0.42) / 0.34)
+  if (normalizedX < 0.7) {
+    return THREE.MathUtils.lerp(0.39, 0.37, (normalizedX - 0.42) / 0.28)
   }
-  const capT = (normalizedX - 0.76) / 0.24
+  const capT = (normalizedX - 0.7) / 0.3
   const roundedFace = 0.37 * (0.2 + Math.cos(capT * Math.PI * 0.5) * 0.8)
   return Math.max(0.012, roundedFace)
 }
@@ -28,10 +28,10 @@ function getHalfDepth(normalizedX: number) {
   if (normalizedX < 0.46) {
     return THREE.MathUtils.lerp(0.19, 0.38, (normalizedX - 0.14) / 0.32)
   }
-  if (normalizedX < 0.76) {
-    return THREE.MathUtils.lerp(0.38, 0.37, (normalizedX - 0.46) / 0.3)
+  if (normalizedX < 0.7) {
+    return THREE.MathUtils.lerp(0.38, 0.37, (normalizedX - 0.46) / 0.24)
   }
-  const capT = (normalizedX - 0.76) / 0.24
+  const capT = (normalizedX - 0.7) / 0.3
   const roundedFace = 0.37 * (0.2 + Math.cos(capT * Math.PI * 0.5) * 0.8)
   return Math.max(0.012, roundedFace)
 }
@@ -99,10 +99,15 @@ export function createFishBodyGeometry() {
   for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
     const noseA = noseRingStart + radialIndex
     const noseB = noseRingStart + radialIndex + 1
-    const tipIndex = positions.length / 3
-    positions.push(noseX + 0.045, 0, 0)
-    uvs.push(0.42, radialIndex / radialSegments)
-    indices.push(noseA, tipIndex, noseB)
+    const angleA = (radialIndex / radialSegments) * Math.PI * 2
+    const angleB = ((radialIndex + 1) / radialSegments) * Math.PI * 2
+    const tipA = positions.length / 3
+    positions.push(noseX + 0.018, Math.cos(angleA) * 0.004, Math.sin(angleA) * 0.004)
+    uvs.push(0.79, 0.5)
+    const tipB = positions.length / 3
+    positions.push(noseX + 0.018, Math.cos(angleB) * 0.004, Math.sin(angleB) * 0.004)
+    uvs.push(0.79, 0.5)
+    indices.push(noseA, tipA, noseB, noseB, tipA, tipB)
   }
 
   const geometry = new THREE.BufferGeometry() as FishGeometry
@@ -126,6 +131,29 @@ export function createFinGeometry(width: number, height: number) {
   }
 
   positions.needsUpdate = true
+  geometry.computeVertexNormals()
+  return geometry
+}
+
+export function createDorsalFinGeometry() {
+  const geometry = new THREE.BufferGeometry()
+  const positions = new Float32Array([
+    -0.2, 0, 0,
+    -0.08, 0.075, 0.012,
+    0.16, 0.09, 0.008,
+    0.34, 0, 0,
+  ])
+  const uvs = new Float32Array([
+    0.08, 0.52,
+    0.32, 0.18,
+    0.76, 0.12,
+    0.96, 0.52,
+  ])
+  const indices = [0, 1, 2, 0, 2, 3]
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2))
+  geometry.setIndex(indices)
   geometry.computeVertexNormals()
   return geometry
 }

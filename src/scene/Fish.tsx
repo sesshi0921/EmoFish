@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { createFinTexture, createFishBodyTexture } from '../lib/fishTexture'
 import {
+  createDorsalFinGeometry,
   createFinGeometry,
   createFishBodyGeometry,
   deformFishBody,
@@ -29,12 +30,14 @@ export function Fish({ emoji, motionRef, opacity = 1 }: FishProps) {
   const finTexture = useMemo(() => createFinTexture(), [])
   const bodyGeometry = useMemo(() => createFishBodyGeometry(), [])
   const tailGeometry = useMemo(() => createFinGeometry(0.44, 0.56), [])
-  const pectoralGeometry = useMemo(() => createFinGeometry(0.28, 0.3), [])
+  const pectoralGeometry = useMemo(() => createFinGeometry(0.34, 0.36), [])
+  const dorsalGeometry = useMemo(() => createDorsalFinGeometry(), [])
   const rootRef = useRef<THREE.Group>(null)
   const bodyRef = useRef<THREE.Mesh>(null)
   const tailRef = useRef<THREE.Mesh>(null)
   const topFinRef = useRef<THREE.Mesh>(null)
   const sideFinRef = useRef<THREE.Mesh>(null)
+  const farSideFinRef = useRef<THREE.Mesh>(null)
 
   const bodyMaterial = useMemo(
     () =>
@@ -107,6 +110,11 @@ export function Fish({ emoji, motionRef, opacity = 1 }: FishProps) {
       sideFinRef.current.rotation.z = 0.34 + Math.sin(motion.finAngle) * 0.18
       sideFinRef.current.rotation.y = -0.42 + Math.sin(motion.finAngle * 1.4) * 0.08
     }
+
+    if (farSideFinRef.current) {
+      farSideFinRef.current.rotation.z = -0.34 - Math.sin(motion.finAngle) * 0.18
+      farSideFinRef.current.rotation.y = Math.PI + 0.42 - Math.sin(motion.finAngle * 1.4) * 0.08
+    }
   })
 
   useEffect(() => {
@@ -116,6 +124,7 @@ export function Fish({ emoji, motionRef, opacity = 1 }: FishProps) {
       bodyGeometry.dispose()
       tailGeometry.dispose()
       pectoralGeometry.dispose()
+      dorsalGeometry.dispose()
       bodyMaterial.dispose()
       finMaterial.dispose()
       outlineMaterial.dispose()
@@ -124,6 +133,7 @@ export function Fish({ emoji, motionRef, opacity = 1 }: FishProps) {
     bodyGeometry,
     bodyMaterial,
     bodyTexture,
+    dorsalGeometry,
     finMaterial,
     finTexture,
     outlineMaterial,
@@ -146,20 +156,29 @@ export function Fish({ emoji, motionRef, opacity = 1 }: FishProps) {
 
       <mesh
         ref={topFinRef}
-        geometry={pectoralGeometry}
+        geometry={dorsalGeometry}
         material={finMaterial}
-        position={[0.18, 0.35, -0.02]}
-        rotation={[0, 0.25, -0.12]}
-        scale={[0.88, 0.72, 1]}
+        position={[0.02, 0.36, -0.01]}
+        rotation={[0, 0.08, -0.04]}
+        scale={[1, 1, 1]}
       />
 
       <mesh
         ref={sideFinRef}
         geometry={pectoralGeometry}
         material={finMaterial}
-        position={[0.12, -0.13, 0.2]}
-        rotation={[0.12, -0.42, 0.34]}
-        scale={[1.02, 0.82, 1]}
+        position={[0.03, -0.03, 0.36]}
+        rotation={[0.08, -1.02, 0.18]}
+        scale={[1.18, 0.98, 1]}
+      />
+
+      <mesh
+        ref={farSideFinRef}
+        geometry={pectoralGeometry}
+        material={finMaterial}
+        position={[0.03, -0.03, -0.36]}
+        rotation={[0.08, Math.PI + 1.02, -0.18]}
+        scale={[1.18, 0.98, 1]}
       />
     </group>
   )
