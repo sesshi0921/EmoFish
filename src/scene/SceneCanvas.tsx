@@ -210,6 +210,8 @@ export function SceneCanvas({ emoji, mode, landingState, onLandingReady, fishEnt
       camera={{ position: [0, 0, 4.6], fov: 38 }}
       gl={{ alpha: true, antialias: true }}
     >
+      <color attach="background" args={[mode === 'swim' ? '#f8e591' : '#fffef7']} />
+      {mode === 'swim' ? <fog attach="fog" args={['#f0d05c', 4.6, 9.2]} /> : null}
       <ambientLight intensity={1.55} />
       <directionalLight position={[2.6, 4, 3.2]} intensity={0.72} />
       <hemisphereLight args={['#fff7c8', '#e8ad19', 0.48]} />
@@ -228,6 +230,10 @@ export function SceneCanvas({ emoji, mode, landingState, onLandingReady, fishEnt
       ) : (
         <>
           <FluidMist mode={mode} />
+          <mesh position={[0, 0, 1.15]}>
+            <planeGeometry args={[8.4, 6.4]} />
+            <meshBasicMaterial color="#f4da76" transparent opacity={0.08} depthWrite={false} />
+          </mesh>
           <mesh position={[0, -1.7, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <planeGeometry args={[8, 6]} />
             <meshStandardMaterial color="#f1b61e" roughness={1} />

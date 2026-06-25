@@ -37,12 +37,12 @@ function colorToCss(color: THREE.Color) {
 
 export function createFishBodyTexture(emoji = '') {
   const rawEmoji = emoji ? createRawEmojiCanvas(emoji) : null
-  const baseColor = new THREE.Color('#f8c62f')
+  const baseColor = new THREE.Color('#ffd95a')
   const hsl = { h: 0, s: 0, l: 0 }
   baseColor.getHSL(hsl)
-  const lightColor = new THREE.Color().setHSL(hsl.h, Math.max(0.28, hsl.s * 0.82), Math.min(0.82, hsl.l + 0.18))
-  const shadowColor = new THREE.Color().setHSL(hsl.h, Math.min(0.92, hsl.s * 1.12), Math.max(0.28, hsl.l - 0.16))
-  const warmShadowColor = new THREE.Color().setHSL((hsl.h + 0.035) % 1, Math.min(0.95, hsl.s * 1.1), Math.max(0.26, hsl.l - 0.11))
+  const lightColor = new THREE.Color().setHSL(hsl.h, Math.max(0.18, hsl.s * 0.62), Math.min(0.9, hsl.l + 0.09))
+  const shadowColor = new THREE.Color().setHSL(hsl.h, Math.min(0.82, hsl.s * 0.84), Math.max(0.46, hsl.l - 0.05))
+  const warmShadowColor = new THREE.Color().setHSL((hsl.h + 0.03) % 1, Math.min(0.78, hsl.s * 0.88), Math.max(0.43, hsl.l - 0.04))
   const canvas = document.createElement('canvas')
   canvas.width = 1024
   canvas.height = 512
@@ -58,10 +58,10 @@ export function createFishBodyTexture(emoji = '') {
   ctx.fillStyle = colorToCss(baseColor)
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  drawPaintStroke(ctx, 380, 164, 250, 54, `${colorToCss(lightColor)}77`, -0.12)
-  drawPaintStroke(ctx, 640, 308, 280, 72, `${colorToCss(shadowColor)}45`, 0.18)
-  drawPaintStroke(ctx, 516, 252, 420, 14, 'rgba(255, 250, 176, 0.34)', -0.02)
-  drawPaintStroke(ctx, 280, 372, 220, 40, `${colorToCss(warmShadowColor)}40`, 0.22)
+  drawPaintStroke(ctx, 380, 164, 250, 54, `${colorToCss(lightColor)}68`, -0.12)
+  drawPaintStroke(ctx, 640, 308, 280, 72, `${colorToCss(shadowColor)}34`, 0.18)
+  drawPaintStroke(ctx, 516, 252, 420, 14, 'rgba(255, 248, 188, 0.24)', -0.02)
+  drawPaintStroke(ctx, 280, 372, 220, 40, `${colorToCss(warmShadowColor)}2e`, 0.22)
 
   if (rawEmoji) {
     drawFacePatch(ctx, rawEmoji, baseColor)
@@ -103,8 +103,8 @@ function drawFacePatch(ctx: CanvasRenderingContext2D, source: HTMLCanvasElement,
   const blendColor = colorToCss(new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l))
   const blend = ctx.createRadialGradient(centerX, centerY, 128, centerX, centerY, 292)
   blend.addColorStop(0, `${blendColor}00`)
-  blend.addColorStop(0.66, `${blendColor}14`)
-  blend.addColorStop(1, `${blendColor}8a`)
+  blend.addColorStop(0.66, `${blendColor}22`)
+  blend.addColorStop(1, `${blendColor}a6`)
   ctx.fillStyle = blend
   ctx.fillRect(centerX - width * 0.6, centerY - height * 0.58, width * 1.2, height * 1.16)
   ctx.restore()
@@ -166,12 +166,12 @@ function paintifyEmoji(canvas: HTMLCanvasElement) {
     }
 
     const tone = lightness / 255
-    const targetRed = 248 + Math.round((tone - 0.5) * 12)
-    const targetGreen = 198 + Math.round((tone - 0.5) * 18)
-    const targetBlue = 47 + Math.round((tone - 0.5) * 10)
-    pixels[index] = Math.round(red * 0.12 + targetRed * 0.88)
-    pixels[index + 1] = Math.round(green * 0.12 + targetGreen * 0.88)
-    pixels[index + 2] = Math.round(blue * 0.12 + targetBlue * 0.88)
+    const targetRed = 253 + Math.round((tone - 0.5) * 6)
+    const targetGreen = 218 + Math.round((tone - 0.5) * 10)
+    const targetBlue = 92 + Math.round((tone - 0.5) * 8)
+    pixels[index] = Math.round(red * 0.05 + targetRed * 0.95)
+    pixels[index + 1] = Math.round(green * 0.05 + targetGreen * 0.95)
+    pixels[index + 2] = Math.round(blue * 0.05 + targetBlue * 0.95)
   }
 
   ctx.putImageData(image, 0, 0)
